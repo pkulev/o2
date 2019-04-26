@@ -19,6 +19,6 @@
     Game object that can shoot holds weapon and weapons slots (move out from
     general game object to more specific class). On fire? it fires current weapon
     (calls method from weapon object that spawns new charge).
-
-* TODO Code live reload
+* DONE Code live reload
+  CLOSED: [2019-04-26 Fri 22:55]
   Use livesupport inside sdl2 loop.
