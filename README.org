@@ -1,0 +1,18 @@
+#+TITLE: Operation "Operation"
+
+* Installation
+  You need installed and working [[https://www.quicklisp.org][quicklisp]] for it.
+
+  - Let quicklisp know about =o2= system:
+  #+BEGIN_SRC sh
+    $ # clone directly to local-projects
+    $ git clone https://github.com/pkulev/o2.git ~/quicklisp/local-projects/
+    $ # or create symlink
+    $ ln -s /path/to/o2 ~/quicklisp/local-projects/o2
+  #+END_SRC
+
+  - Load system into the running REPL and run the game:
+  #+BEGIN_SRC common-lisp
+    (ql:quickload :o2)
+    (o2:main)  ; run the game
+  #+END_SRC
