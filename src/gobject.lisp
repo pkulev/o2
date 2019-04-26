@@ -88,7 +88,7 @@
    (pos-direction :initform 1
                   :accessor pos-direction)))
 
-(defmethod update ((tr transform) &key (dt 1) &allow-other-keys)
+(defmethod update :before ((tr transform) &key (dt 1) &allow-other-keys)
   (with-slots (x y
                x-velocity x-max-velocity
                y-velocity y-max-velocity
