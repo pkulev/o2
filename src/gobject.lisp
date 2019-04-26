@@ -114,9 +114,7 @@
           (setf y-velocity 0))
         (if (< y-velocity y-max-velocity)
             (setf y-velocity (+ y-velocity 1))))
-    (setf y (+ y y-velocity)))
-
-  (if (next-method-p) (call-next-method)))
+    (setf y (+ y y-velocity))))
 
 (defmethod update ((player james) &key (dt 1) &allow-other-keys)
   (with-slots (weapon weapons fire?) player
@@ -128,9 +126,7 @@
     (when fire?
       ;;(make-shot weapon x y barrel-x barrel-y))))
       (format t "firing primary caliber!")
-      (setf fire? nil)))
-
-  (if (next-method-p) (call-next-method)))
+      (setf fire? nil))))
 
 (defmethod render ((player james))
   (with-slots (x y sprite pos-direction) player
