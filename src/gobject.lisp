@@ -87,7 +87,13 @@
 
    ;; Position/Rotation of the sprite
    (pos-direction :initform 1
-                  :accessor pos-direction)))
+                  :accessor pos-direction)
+
+   (sitting? :initform nil
+             :accessor sitting?)
+   (sitting-sprite :initform nil
+                   :initarg :sitting-sprite
+                   :accessor sitting-sprite)))
 
 (defmethod update :before ((tr transform) &key (dt 1) &allow-other-keys)
   (with-slots (x y
@@ -95,6 +101,12 @@
                y-velocity y-max-velocity
                x-accel x-move-direction) tr
     ;; TODO: check screen boundaries?
+
+    ;; FIXME: move it somewhere, this is not a place for a james-specific thing
+    (when (and (typep tr 'james) (not (zerop x-velocity)))
+      (with-slots (sitting?) tr
+        (when sitting?
+          (setf x-velocity (values (floor x-velocity 2))))))
 
     ;; horizontal movement
     (when (not (zerop x-accel))
@@ -106,18 +118,16 @@
     ;; TODO: proper ground collision, right now true here
     ;; means that the object is not falling, while false means it is
     (if (not (<= (+ y y-velocity) 400))
-        (progn
-          ;; if tr also is a player, handle the jumping part of it
-          (if (typep tr 'james)
-              (with-slots (jumping?) tr
-                (setf jumping? nil)))
-          (setf y-velocity 0))
+        (setf y-velocity 0)
         (if (< y-velocity y-max-velocity)
             (setf y-velocity (+ y-velocity 1))))
     (setf y (+ y y-velocity))))
 
 (defmethod update ((player james) &key (dt 1) &allow-other-keys)
-  (with-slots (weapon weapons fire?) player
+  (with-slots (weapon weapons fire? jumping? y y-velocity) player
+    ;; FIXME: 400 is the hardcoded floor
+    (if (not (<= (+ y y-velocity) 400))
+        (setf jumping? nil))
 
     ;; TODO: update subobjects
     (dolist (weapon weapons)
@@ -129,9 +139,12 @@
       (setf fire? nil))))
 
 (defmethod render ((player james))
-  (with-slots (x y sprite pos-direction) player
+  (with-slots (x y sprite pos-direction sitting? sitting-sprite) player
     (let ((flip (if (= pos-direction 1) :none :horizontal)))
-      (when sprite (draw-sprite sprite x y :flip flip)))))
+      (if (not sitting?)
+          (when sprite (draw-sprite sprite x y :flip flip))
+          ;; FIXME: 30 is a hardcoded value of leg difference when sitting
+          (when sitting-sprite (draw-sprite sitting-sprite x (+ y 30) :flip flip))))))
 
 (defmethod move-left ((player james))
   (with-slots (x-accel x-max-accel x-move-direction pos-direction) player

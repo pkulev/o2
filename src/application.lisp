@@ -59,6 +59,7 @@
 
           (add-sprite :background (res/gfx "background-placeholder.png"))
           (add-sprite :player (res/gfx "player-placeholder.png"))
+          (add-sprite :player-sitting (res/gfx "player-sitting-placeholder.png"))
           (add-sprite :bad-guy (res/gfx "bad-guy-placeholder.png"))
 
           (register-state app 'ingame-state :ingame)

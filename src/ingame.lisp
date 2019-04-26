@@ -13,7 +13,8 @@
     ;; player
     (setf actor (make-instance 'james
                                :x 50 :y 400
-                               :sprite :player))
+                               :sprite :player
+                               :sitting-sprite :player-sitting))
 
     (setf objects (list
                    ;; just something invisible
@@ -59,7 +60,10 @@
 
       (when (or (sdl2:scancode= scancode :scancode-right) (sdl2:scancode= scancode :scancode-d))
         (setf (x-accel actor) 0)
-        (setf (x-move-direction actor) 0)))))
+        (setf (x-move-direction actor) 0))
+
+      (when (sdl2:scancode= scancode :scancode-down)
+        (setf (sitting? actor) nil)))))
 
 (defun ingame-keydown (ingame keysym)
   (with-slots (actor running application) ingame
@@ -74,5 +78,7 @@
         (move-right actor))
       (when (sdl2:scancode= scancode :scancode-space)
         (jump actor))
+      (when (sdl2:scancode= scancode :scancode-down)
+        (setf (sitting? actor) t))
       (when (sdl2:scancode= scancode :scancode-return)
         (fire actor)))))
