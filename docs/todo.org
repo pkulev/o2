@@ -1,0 +1,24 @@
+#+TITLE: TODOs
+
+* TODO jump
+    configurable
+* TODO crouch
+    with reducing dx
+* TODO camera
+    Background must be a little bigger than window size.
+    Background is kind of camera subobject.
+* TODO background
+** DONE simple stupid background
+** TODO infinite scrolling
+** TODO several layers that move with different speed
+* TODO Shooting
+    Configurable place for spawning charges.
+    Charge is separate class hierarchy subclasses =game-object=.
+    Also weapon is separate hierarchy too that fires some kind of changes.
+    Maybe split charges to projectile and hitscan is good idea.
+    Game object that can shoot holds weapon and weapons slots (move out from
+    general game object to more specific class). On fire? it fires current weapon
+    (calls method from weapon object that spawns new charge).
+
+* TODO Code live reload
+  Use livesupport inside sdl2 loop.
