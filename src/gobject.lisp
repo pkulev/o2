@@ -20,8 +20,8 @@
                    :accessor max-x-velocity)
    (x-accel :initform 0
             :accessor x-accel)
-   (max-x-accel :initform 5
-                :accessor max-x-accel)
+   (x-max-accel :initform 5
+                :accessor x-max-accel)
 
    (y-velocity :initform 0
                :accessor y-velocity)
@@ -102,7 +102,7 @@
       (setf x (+ x (* x-velocity x-move-direction dt))))
 
     ;; vertical movement / falling
-    ;; TODO: proper ground colission, right now true here
+    ;; TODO: proper ground collision, right now true here
     ;; means that the object is not falling, while false means it is
     (if (not (<= (+ y y-velocity) 400))
         (progn
@@ -137,14 +137,14 @@
       (when sprite (draw-sprite sprite x y :flip flip)))))
 
 (defmethod move-left ((player james))
-  (with-slots (x-accel max-x-accel x-move-direction pos-direction) player
-    (setf x-accel max-x-accel)
+  (with-slots (x-accel x-max-accel x-move-direction pos-direction) player
+    (setf x-accel x-max-accel)
     (setf x-move-direction -1)
     (setf pos-direction -1)))
 
 (defmethod move-right ((player james))
-  (with-slots (x-accel max-x-accel x-move-direction pos-direction) player
-    (setf x-accel max-x-accel)
+  (with-slots (x-accel x-max-accel x-move-direction pos-direction) player
+    (setf x-accel x-max-accel)
     (setf x-move-direction 1)
     (setf pos-direction 1)))
 
