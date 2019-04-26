@@ -1,11 +1,5 @@
 (in-package :o2)
 
-(defclass jump ()
-  ((jumping? :initform nil
-             :accessor jumping?)
-   (jump-velocity :initform -10
-                  :accessor jump-velocity)))
-
 (defclass transform ()
   ((x :initform 0
       :initarg :x
@@ -62,7 +56,7 @@
         (sdl2:make-rect x y 0 0))))
 
 
-(defclass james (game-object transform jump)
+(defclass james (game-object transform)
   ((render-priority :initform 1
                     :allocation :class)
    (health :initform 100
@@ -83,6 +77,13 @@
                  :reader move-speed-v)
    (move-speed-h :initform 15
                  :reader move-speed-h)
+
+   ;; Jumping
+   (jumping? :initform nil
+             :accessor jumping?)
+   ;; Velocity added when jumping
+   (jumping-added-velocity :initform -10
+                           :accessor jumping-added-velocity)
 
    ;; Position/Rotation of the sprite
    (pos-direction :initform 1
@@ -106,8 +107,8 @@
     ;; means that the object is not falling, while false means it is
     (if (not (<= (+ y y-velocity) 400))
         (progn
-          ;; if tr also can jump, handle the jumping part of it
-          (if (typep tr 'jump)
+          ;; if tr also is a player, handle the jumping part of it
+          (if (typep tr 'james)
               (with-slots (jumping?) tr
                 (setf jumping? nil)))
           (setf y-velocity 0))
@@ -149,12 +150,11 @@
     (setf pos-direction 1)))
 
 (defmethod jump ((player james))
-  (with-slots (jumping? y y-velocity) player
+  (with-slots (jumping? jumping-added-velocity y y-velocity) player
     (if (not jumping?)
         (progn
-          (setf y (- y 1))
           (setf jumping? t)
-          (setf y-velocity -10)))))
+          (setf y-velocity jumping-added-velocity)))))
 
 (defmethod fire ((player james))
   (setf (slot-value player 'fire?) t))
