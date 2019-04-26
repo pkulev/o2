@@ -17,21 +17,22 @@
 
     (setf objects (list
                    ;; just something invisible
-                   (make-instance 'game-object
-                                  :x 10 :y 10
-                                  :sprite nil)
+                   ;; (make-instance 'game-object
+                   ;;                :x 10 :y 10
+                   ;;                :sprite nil)
 
                    ;; background
-                   (make-instance 'game-object
-                                  :sprite :background)
+                   ;; (make-instance 'game-object
+                   ;;                :sprite :background)
 
                    ;; TODO: implement sorting by render-priority
                    actor
 
                    ;; bad guy
-                   (make-instance 'game-object
-                                  :x 700 :y 400
-                                  :sprite :bad-guy)))))
+                   ;; (make-instance 'game-object
+                   ;;                :x 700 :y 400
+                   ;;                :sprite :bad-guy)
+                   ))))
 
 (defmethod update ((ingame ingame-state) &key dt &allow-other-keys)
   (with-slots (running objects) ingame
@@ -53,12 +54,12 @@
   (with-slots (actor) ingame
     (let ((scancode (sdl2:scancode-value keysym)))
       (when (or (sdl2:scancode= scancode :scancode-left) (sdl2:scancode= scancode :scancode-a))
-        (setf (ax actor) 0)
-        (setf (move-direction-h actor) 0))
+        (setf (x-accel actor) 0)
+        (setf (x-move-direction actor) 0))
 
       (when (or (sdl2:scancode= scancode :scancode-right) (sdl2:scancode= scancode :scancode-d))
-        (setf (ax actor) 0)
-        (setf (move-direction-h actor) 0)))))
+        (setf (x-accel actor) 0)
+        (setf (x-move-direction actor) 0)))))
 
 (defun ingame-keydown (ingame keysym)
   (with-slots (actor running application) ingame

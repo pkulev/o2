@@ -1,39 +1,43 @@
 (in-package :o2)
 
-(defclass game-object ()
-  ((render-priority :initform 0
-                    :accessor render-priority
-                    :allocation :class)
-   (x :initform 0
+(defclass jump ()
+  ((jumping? :initform nil
+             :accessor jumping?)
+   (jump-velocity :initform -10
+                  :accessor jump-velocity)))
+
+(defclass transform ()
+  ((x :initform 0
       :initarg :x
       :accessor x)
    (y :initform 0
       :initarg :y
       :accessor y)
+
+   (x-velocity :initform 0
+               :accessor x-velocity)
+   (x-max-velocity :initform 20
+                   :accessor max-x-velocity)
+   (x-accel :initform 0
+            :accessor x-accel)
+   (max-x-accel :initform 5
+                :accessor max-x-accel)
+
+   (y-velocity :initform 0
+               :accessor y-velocity)
+   (y-max-velocity :initform 20
+                   :accessor y-max-velocity)
+
+   (x-move-direction :initform 0
+                     :accessor x-move-direction)))
+
+(defclass game-object ()
+  ((render-priority :initform 0
+                    :accessor render-priority
+                    :allocation :class)
    (sprite :initform nil
            :initarg :sprite
-           :reader sprite)
-
-   ;; Physics
-   (dx :initform 0
-       :accessor dx)
-   (dy :initform 0
-       :accessor dy)
-   (ax :initform 0
-       :accessor ax)
-   (ay :initform 0
-       :accessor ay)
-   (max-dx :initform 20
-           :reader max-dx)
-   (max-dy :initform 20
-           :reader max-dy)
-   (max-ax :initform 5
-           :reader max-ax)
-   (max-ay :initform 5
-           :reader max-ay)
-
-   (fire? :initform nil
-          :accessor fire?)))
+           :reader sprite)))
 
 (defgeneric update (object &key &allow-other-keys)
   (:documentation "Update game object state."))
@@ -58,7 +62,7 @@
         (sdl2:make-rect x y 0 0))))
 
 
-(defclass james (game-object)
+(defclass james (game-object transform jump)
   ((render-priority :initform 1
                     :allocation :class)
    (health :initform 100
@@ -69,6 +73,8 @@
            :accessor weapon)
    (weapons :initform (list)
             :reader weapons)
+   (fire? :initform nil
+          :accessor fire?)
 
    (collider :initform nil
              :accessor collider)
@@ -77,27 +83,42 @@
                  :reader move-speed-v)
    (move-speed-h :initform 15
                  :reader move-speed-h)
-   (move-direction-v :initform 0
-                     :accessor move-direction-v)
-   (move-direction-h :initform 0
-                     :accessor move-direction-h)
+
+   ;; Position/Rotation of the sprite
    (pos-direction :initform 1
                   :accessor pos-direction)))
 
-(defmethod update ((player james) &key (dt 1) &allow-other-keys)
-  (with-slots (x y dx dy max-dx max-dy
-               ax ay max-ax max-ay
-               move-direction-h
-               weapon weapons fire?) player
-    ;; horizontal movement
-    (when (not (zerop ax))
-      (when (> (setf dx (+ dx ax)) max-dx)
-        (setf dx max-dx))
-      (setf x (+ x (* dx move-direction-h dt))))
-      ;;(setf move-direction-h 0))
-    ;; TODO: vertical movement
-
+(defmethod update :around ((tr transform) &key (dt 1) &allow-other-keys)
+  (with-slots (x y
+               x-velocity x-max-velocity
+               y-velocity y-max-velocity
+               x-accel x-move-direction) tr
     ;; TODO: check screen boundaries?
+
+    ;; horizontal movement
+    (when (not (zerop x-accel))
+      (when (> (setf x-velocity (+ x-velocity x-accel)) x-max-velocity)
+        (setf x-velocity x-max-velocity))
+      (setf x (+ x (* x-velocity x-move-direction dt))))
+
+    ;; vertical movement / falling
+    ;; TODO: proper ground colission, right now true here
+    ;; means that the object is not falling, while false means it is
+    (if (not (<= (+ y y-velocity) 400))
+        (progn
+          ;; if tr also can jump, handle the jumping part of it
+          (if (typep tr 'jump)
+              (with-slots (jumping?) tr
+                (setf jumping? nil)))
+          (setf y-velocity 0))
+        (if (< y-velocity y-max-velocity)
+            (setf y-velocity (+ y-velocity 1))))
+    (setf y (+ y y-velocity)))
+
+  (if (next-method-p) (call-next-method)))
+
+(defmethod update ((player james) &key (dt 1) &allow-other-keys)
+  (with-slots (weapon weapons fire?) player
 
     ;; TODO: update subobjects
     (dolist (weapon weapons)
@@ -106,7 +127,9 @@
     (when fire?
       ;;(make-shot weapon x y barrel-x barrel-y))))
       (format t "firing primary caliber!")
-      (setf fire? nil))))
+      (setf fire? nil)))
+
+  (if (next-method-p) (call-next-method)))
 
 (defmethod render ((player james))
   (with-slots (x y sprite pos-direction) player
@@ -114,20 +137,24 @@
       (when sprite (draw-sprite sprite x y :flip flip)))))
 
 (defmethod move-left ((player james))
-  (with-slots (ax max-ax move-direction-h pos-direction) player
-    (setf ax max-ax)
-    (setf move-direction-h -1)
+  (with-slots (x-accel max-x-accel x-move-direction pos-direction) player
+    (setf x-accel max-x-accel)
+    (setf x-move-direction -1)
     (setf pos-direction -1)))
 
 (defmethod move-right ((player james))
-  (with-slots (ax max-ax move-direction-h pos-direction) player
-    (setf ax max-ax)
-    (setf move-direction-h 1)
+  (with-slots (x-accel max-x-accel x-move-direction pos-direction) player
+    (setf x-accel max-x-accel)
+    (setf x-move-direction 1)
     (setf pos-direction 1)))
 
 (defmethod jump ((player james))
-  (setf (slot-value player 'move-direction-v) 1))
+  (with-slots (jumping? y y-velocity) player
+    (if (not jumping?)
+        (progn
+          (setf y (- y 1))
+          (setf jumping? t)
+          (setf y-velocity -10)))))
 
 (defmethod fire ((player james))
   (setf (slot-value player 'fire?) t))
-
