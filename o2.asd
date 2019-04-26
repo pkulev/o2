@@ -3,7 +3,8 @@
   :author "Pavel Kulyov <kulyov.pavel@gmail.com>"
   :license "MIT"
   :depends-on (:sdl2
-               :sdl2-image)
+               :sdl2-image
+               :livesupport)
   :pathname "src"
   :components ((:file "package")
                (:file "o2")

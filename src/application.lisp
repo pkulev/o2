@@ -65,7 +65,7 @@
           (set-state app :ingame)
 
           (with-slots ((state current-state)) app
-            (sdl2:with-event-loop (:method :poll)
+            (livesupport:continuable (sdl2:with-event-loop (:method :poll)
               (:keydown (:keysym keysym)
                         (process-input state :keydown keysym))
               (:keyup (:keysym keysym)
@@ -73,6 +73,7 @@
               (:idle ()
                      (setf current-frame (sdl2:get-ticks))
                      ;; TODO move out to :before and :after render
+                     (livesupport:update-repl-link)
                      (sdl2:render-clear ren)
                      (update state)
                      (render state)
@@ -83,4 +84,4 @@
                          (sdl2:delay (round (- +delay+ current-speed))))))
               (:quit ()
                      (sdl2-image:quit)
-                     t))))))))
+                     t)))))))))
