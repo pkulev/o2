@@ -7,9 +7,9 @@
            :reader damage-range)))
 
 (defmethod update ((ch weapon-charge) &key dt &allow-other-keys)
-  (with-slots (x y sprite) ch
-    (let ((charge-rect (sdl2:make-rect x y (sprite-width sprite) (sprite-height sprite))))
-      (with-slots (objects) (current-app-state)
+  (with-slots (objects camera) (current-app-state)
+    (with-slots (x y sprite) ch
+      (let ((charge-rect (sdl2:make-rect (+ x (car camera)) y (sprite-width sprite) (sprite-height sprite))))
         (loop for en in objects
               when (typep en 'enemy)
                 do (with-slots ((en-x x) (en-y y) (en-sprite sprite)) en
@@ -18,11 +18,11 @@
                                      (sprite-width en-sprite) (sprite-height en-sprite))))
                        (when (sdl2:has-intersect charge-rect en-rect)
                          (hurt en ch)
-                         (destroy ch)))))))
+                         (destroy ch))))))
 
-    ;; Delete bullets when it's not on the screen anymore
-    (when (> x 1100)
-      (destroy ch))))
+      ;; Delete bullets when it's not on the screen anymore
+      (when (> x 1100)
+        (destroy ch)))))
 
 (defmethod render ((ch weapon-charge))
   (with-slots (x y sprite) ch

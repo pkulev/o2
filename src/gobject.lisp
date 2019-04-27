@@ -79,7 +79,7 @@
   (dolist (child (children object))
     (update child)))
 
-(defclass enemy (game-object transform)
+(defclass enemy (game-object physical)
   ((render-priority :initform 1
                     :allocation :class)
    (health :initform 100
@@ -88,8 +88,24 @@
                :reader max-health)
    (armor :initform 0
           :reader armor)
-   (weapon :initform nil)
-   (weapons :initform (list))))
+   (weapon :initform nil)))
+
+(defmethod update :before ((en enemy) &key (dt 1) &allow-other-keys)
+  (with-slots (actor camera) (current-app-state)
+    (with-slots ((player-x x)) actor
+      (with-slots (x x-accel x-move-direction) en
+
+        (draw-text :ubuntu (format nil "~A ~A" x player-x) 0 0 :color '(255 255 255))
+
+        (setf x-move-direction
+              (cond
+                ((> (+ player-x (car camera)) x)
+                 1)
+                ((< (+ player-x (car camera)) x)
+                 -1)
+                (t 0)))
+
+        (setf x-accel 1)))))
 
 (defmethod render :after ((en enemy))
   (with-slots (camera) (current-app-state)
