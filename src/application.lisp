@@ -23,7 +23,6 @@
    (running? :initform nil)))
 
 (defun make-application ()
-  (when *application* (error "Application instance already exists"))
   (setf *application* (make-instance 'application)))
 
 (defun current-app-state ()
