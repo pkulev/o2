@@ -7,5 +7,5 @@
         (asdf:system-source-directory :o2))
     "Project root absolute path.")
 
-  (let ((o2 (make-instance 'application)))
+  (let ((o2 (make-application)))
     (start o2)))

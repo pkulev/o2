@@ -2,6 +2,8 @@
 
 (defparameter +delay+ (/ 1000.0 30.0) "FPS")
 
+(defvar *application* nil "Instance of current application.")
+
 (defun res ()
   (merge-pathnames #p"res/" +root+))
 
@@ -15,9 +17,20 @@
 (defclass application ()
   ((states :initform (make-hash-table)
            :reader states)
-   (current-state :initform nil)
+   (current-state :initform nil
+                  :reader current-state)
    (renderer :initform nil)
    (running? :initform nil)))
+
+(defun make-application ()
+  (when *application* (error "Application instance already exists"))
+  (setf *application* (make-instance 'application)))
+
+(defun get-current-application ()
+  *application*)
+
+(defun current-app-state ()
+  (current-state (get-current-application)))
 
 (defun register-state (app state-class state-name)
   (with-slots ((states states)
@@ -85,4 +98,5 @@
                          (sdl2:delay (round (- +delay+ current-speed))))))
               (:quit ()
                      (sdl2-image:quit)
+                     (setf *application* nil)
                      t)))))))))
