@@ -62,7 +62,7 @@
         (setf (x-accel actor) 0)
         (setf (x-move-direction actor) 0))
 
-      (when (sdl2:scancode= scancode :scancode-down)
+      (when (or (sdl2:scancode= scancode :scancode-down) (sdl2:scancode= scancode :scancode-s))
         (setf (sitting? actor) nil)))))
 
 (defun ingame-keydown (ingame keysym)
@@ -76,9 +76,9 @@
         (move-left actor))
       (when (or (sdl2:scancode= scancode :scancode-right) (sdl2:scancode= scancode :scancode-d))
         (move-right actor))
-      (when (sdl2:scancode= scancode :scancode-space)
+      (when (or (sdl2:scancode= scancode :scancode-space) (sdl2:scancode= scancode :scancode-w))
         (jump actor))
-      (when (sdl2:scancode= scancode :scancode-down)
+      (when (or (sdl2:scancode= scancode :scancode-down) (sdl2:scancode= scancode :scancode-s))
         (setf (sitting? actor) t))
       (when (sdl2:scancode= scancode :scancode-return)
         (fire actor)))))
