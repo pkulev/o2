@@ -2,12 +2,10 @@
 
 (defclass ingame-state (state)
   ((running :initform nil
-            :accessor running?)
-   (objects :initform (list)
-            :reader objects)))
+            :accessor running?)))
 
 (defmethod init ((ingame ingame-state))
-  (with-slots (actor running objects) ingame
+  (with-slots (actor running) ingame
     (setf running t)
 
     ;; player
@@ -16,29 +14,21 @@
                                :sprite :player
                                :sitting-sprite :player-sitting))
 
-    (setf objects (list
-                   ;; just something invisible
-                   ;; (make-instance 'game-object
-                   ;;                :x 10 :y 10
-                   ;;                :sprite nil)
+    (add-object ingame
+                (make-instance 'background
+                               :sprite :background))
 
-                   ;; background
-                   (make-instance 'background
-                                  :sprite :background)
+    
+    (add-object ingame actor)
 
-                   ;; TODO: implement sorting by render-priority
-                   actor
+    ;; bad guy
+    (add-object ingame 
+                (make-instance 'enemy
+                               :x 700 :y 400
+                               :sprite :bad-guy))
 
-                   ;; bad guy
-                   (make-instance 'enemy
-                                  :x 700 :y 400
-                                  :sprite :bad-guy)))))
-
-(defmethod update ((ingame ingame-state) &key dt &allow-other-keys)
-  (with-slots (running objects) ingame
-    (when running
-      (dolist (object objects)
-        (update object)))))
+    ;; TODO: implement sorting by render-priority
+    (setf (slot-value ingame 'objects) (reverse (objects ingame)))))
 
 (defmethod render ((ingame ingame-state))
   (with-slots (score objects) ingame
