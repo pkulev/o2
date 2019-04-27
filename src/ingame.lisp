@@ -21,6 +21,7 @@
 
     (add-object ingame
                 (make-instance 'background
+                               :x -512 :y -385
                                :sprite :background))
 
     (add-object ingame actor)
