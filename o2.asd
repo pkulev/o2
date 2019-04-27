@@ -9,7 +9,8 @@
   :pathname "src"
   :components ((:file "package")
                (:file "o2")
-               (:file "gobject")
+               (:file "gobject"
+                :depends-on ("charge"))
                (:file "background")
                (:file "charge")
                (:file "weapon")
