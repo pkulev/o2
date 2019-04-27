@@ -2,7 +2,7 @@
 
 (defparameter +delay+ (/ 1000.0 30.0) "FPS")
 
-(defvar *application* nil "Instance of current application.")
+(defvar *application* nil "Instance of the current application.")
 
 (defun res ()
   (merge-pathnames #p"res/" +root+))
@@ -26,11 +26,8 @@
   (when *application* (error "Application instance already exists"))
   (setf *application* (make-instance 'application)))
 
-(defun get-current-application ()
-  *application*)
-
 (defun current-app-state ()
-  (current-state (get-current-application)))
+  (current-state *application*))
 
 (defun register-state (app state-class state-name)
   (with-slots ((states states)
