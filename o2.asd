@@ -13,7 +13,6 @@
                (:file "background")
                (:file "charge")
                (:file "weapon")
-               (:file "collision")
                (:file "renderer")
                (:file "state")
                (:file "ingame")

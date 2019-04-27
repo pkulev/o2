@@ -84,11 +84,34 @@
                     :allocation :class)
    (health :initform 100
            :reader health)
+   (max-health :initform 100
+               :reader max-health)
    (armor :initform 0
           :reader armor)
    (weapon :initform nil)
    (weapons :initform (list))))
 
+(defmethod render :after ((en enemy))
+  (with-slots (camera) (current-app-state)
+    (with-slots (health max-health x y) en
+      (draw-text
+       :ubuntu
+       (format nil "~A/~A" health max-health)
+       (- x (car camera)) (- y (cdr camera))
+       :color '(255 255 255)))))
+
+(defmethod hurt ((en enemy) (ch weapon-charge))
+  (with-slots (health) en
+    (with-slots (damage-range) ch
+      ;; (+ lower-bound (random upper-bound)) is how you do random in CL
+      (let ((damage (+ (car damage-range) (random (cdr damage-range)))))
+        (setf health (- health damage))
+        (when (< health 0)
+          (destroy en))))))
+
+(defmethod destroy ((obj game-object))
+  (with-slots (objects) (current-app-state)
+    (setf objects (remove obj objects))))
 
 (defclass james (game-object physical)
   ((render-priority :initform 2
