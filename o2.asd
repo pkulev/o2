@@ -9,6 +9,7 @@
   :components ((:file "package")
                (:file "o2")
                (:file "gobject")
+               (:file "background")
                (:file "collision")
                (:file "renderer")
                (:file "state")

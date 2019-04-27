@@ -56,8 +56,19 @@
         (sdl2:make-rect x y 0 0))))
 
 
-(defclass james (game-object transform)
+(defclass enemy (game-object transform)
   ((render-priority :initform 1
+                    :allocation :class)
+   (health :initform 100
+           :reader health)
+   (armor :initform 0
+          :reader armor)
+   (weapon :initform nil)
+   (weapons :initform (list))))
+
+
+(defclass james (game-object transform)
+  ((render-priority :initform 2
                     :allocation :class)
    (health :initform 100
            :reader health)

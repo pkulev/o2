@@ -23,17 +23,16 @@
                    ;;                :sprite nil)
 
                    ;; background
-                   ;; (make-instance 'game-object
-                   ;;                :sprite :background)
+                   (make-instance 'background
+                                  :sprite :background)
 
                    ;; TODO: implement sorting by render-priority
                    actor
 
                    ;; bad guy
-                   ;; (make-instance 'game-object
-                   ;;                :x 700 :y 400
-                   ;;                :sprite :bad-guy)
-                   ))))
+                   (make-instance 'enemy
+                                  :x 700 :y 400
+                                  :sprite :bad-guy)))))
 
 (defmethod update ((ingame ingame-state) &key dt &allow-other-keys)
   (with-slots (running objects) ingame
