@@ -79,7 +79,7 @@
    (weapon :initform nil
            :accessor weapon)
    (weapons :initform (list)
-            :reader weapons)
+            :accessor weapons)
    (fire? :initform nil
           :accessor fire?)
 
@@ -137,7 +137,11 @@
     (setf y (+ y y-velocity))))
 
 (defmethod update ((player james) &key (dt 1) &allow-other-keys)
-  (with-slots (weapon weapons fire? jumping? y y-velocity x x-velocity x-move-direction) player
+  (with-slots (weapon weapons
+               fire? jumping?
+               y y-velocity
+               x x-velocity x-move-direction
+               pos-direction sprite player)
     ;; FIXME: 400 is the hardcoded floor
     (if (not (<= (+ y y-velocity) 400))
         (setf jumping? nil))
@@ -163,7 +167,10 @@
 
     (when fire?
       ;;(make-shot weapon x y barrel-x barrel-y))))
-      (format t "firing primary caliber!")
+      (make-shot weapon
+                 (+ x (sprite-width sprite))
+                 (+ y (round (/ (sprite-height sprite) 3)))
+                 pos-direction)
       (setf fire? nil))))
 
 (defmethod render ((player james))

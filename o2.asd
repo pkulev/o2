@@ -10,6 +10,8 @@
                (:file "o2")
                (:file "gobject")
                (:file "background")
+               (:file "charge")
+               (:file "weapon")
                (:file "collision")
                (:file "renderer")
                (:file "state")

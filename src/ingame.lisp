@@ -20,6 +20,10 @@
 
     
     (add-object ingame actor)
+    (setf (weapon actor) (make-instance 'G17
+                                        :ammo 32
+                                        :current-ammo 17))
+    (push (weapon actor) (weapons actor))
 
     ;; bad guy
     (add-object ingame 
