@@ -18,7 +18,11 @@
                                      (sprite-width en-sprite) (sprite-height en-sprite))))
                        (when (sdl2:has-intersect charge-rect en-rect)
                          (hurt en ch)
-                         (destroy ch)))))))))
+                         (destroy ch)))))))
+
+    ;; Delete bullets when it's not on the screen anymore
+    (when (> x 1100)
+      (destroy ch))))
 
 (defmethod render ((ch weapon-charge))
   (with-slots (x y sprite) ch
