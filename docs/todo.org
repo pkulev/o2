@@ -6,11 +6,14 @@
 * DONE crouch
   CLOSED: [2019-04-27 Sat 11:03]
     with reducing dx
-* DONE camera
-  CLOSED: [2019-04-27 Sat 11:03]
+* TODO camera [1/2]
+** DONE basica camera
+   CLOSED: [2019-04-28 Sun 01:35]
     Background must be a little bigger than window size.
     +Background is kind of camera subobject.+
     Background actually just moves with the camera as the player moves, but slower than other things
+** TODO unify coordinates
+   make coordinates of the palyer and their bulldets account for camera instead of maunally adding them everywhere
 * TODO background [1/3]
 ** DONE simple stupid background
 ** TODO infinite scrolling
