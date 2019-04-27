@@ -1,14 +1,7 @@
 (in-package :o2)
 
-(defclass transform ()
-  ((x :initform 0
-      :initarg :x
-      :accessor x)
-   (y :initform 0
-      :initarg :y
-      :accessor y)
-
-   (x-velocity :initform 0
+(defclass physical (transform)
+  ((x-velocity :initform 0
                :accessor x-velocity)
    (x-max-velocity :initform 20
                    :accessor max-x-velocity)
@@ -24,6 +17,14 @@
 
    (x-move-direction :initform 0
                      :accessor x-move-direction)))
+
+(defclass transform ()
+  ((x :initform 0
+      :initarg :x
+      :accessor x)
+   (y :initform 0
+      :initarg :y
+      :accessor y)))
 
 (defclass game-object ()
   ((render-priority :initform 0
@@ -67,7 +68,7 @@
    (weapons :initform (list))))
 
 
-(defclass james (game-object transform)
+(defclass james (game-object physical)
   ((render-priority :initform 2
                     :allocation :class)
    (health :initform 100
@@ -106,7 +107,7 @@
                    :initarg :sitting-sprite
                    :accessor sitting-sprite)))
 
-(defmethod update :before ((tr transform) &key (dt 1) &allow-other-keys)
+(defmethod update :before ((tr physical) &key (dt 1) &allow-other-keys)
   (with-slots (x y
                x-velocity x-max-velocity
                y-velocity y-max-velocity
