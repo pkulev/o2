@@ -1,13 +1,17 @@
 #+TITLE: TODOs
 
-* TODO jump
+* DONE jump
+  CLOSED: [2019-04-27 Sat 11:02]
     configurable
-* TODO crouch
+* DONE crouch
+  CLOSED: [2019-04-27 Sat 11:03]
     with reducing dx
-* TODO camera
+* DONE camera
+  CLOSED: [2019-04-27 Sat 11:03]
     Background must be a little bigger than window size.
-    Background is kind of camera subobject.
-* TODO background
+    +Background is kind of camera subobject.+
+    Background actually just moves with the camera as the player moves, but slower than other things
+* TODO background [1/3]
 ** DONE simple stupid background
 ** TODO infinite scrolling
 ** TODO several layers that move with different speed
