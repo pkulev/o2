@@ -88,7 +88,9 @@
                :reader max-health)
    (armor :initform 0
           :reader armor)
-   (weapon :initform nil)))
+   (weapon :initform nil)
+
+   (x-max-velocity :initform 10)))
 
 (defmethod update :before ((en enemy) &key (dt 1) &allow-other-keys)
   (with-slots (actor camera) (current-app-state)
