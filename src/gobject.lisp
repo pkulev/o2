@@ -44,7 +44,8 @@
 
 (defmethod render ((object game-object))
   (with-slots (x y sprite) object
-    (when sprite (draw-sprite sprite x y))))
+    (with-slots (camera) (current-app-state)
+      (when sprite (draw-sprite sprite (- x (car camera)) (- y (cdr camera)))))))
 
 (defmethod get-rect ((object game-object))
   (with-slots (x y sprite) object
@@ -84,7 +85,7 @@
 
    (collider :initform nil
              :accessor collider)
-   
+
    (move-speed-v :initform 20
                  :reader move-speed-v)
    (move-speed-h :initform 15
@@ -136,10 +137,22 @@
     (setf y (+ y y-velocity))))
 
 (defmethod update ((player james) &key (dt 1) &allow-other-keys)
-  (with-slots (weapon weapons fire? jumping? y y-velocity) player
+  (with-slots (weapon weapons fire? jumping? y y-velocity x x-velocity x-move-direction) player
     ;; FIXME: 400 is the hardcoded floor
     (if (not (<= (+ y y-velocity) 400))
         (setf jumping? nil))
+
+    ;; FIXME: screen boundry check, do something proper here
+    (let ((next-x (+ x (* x-move-direction x-velocity))))
+      (when (<= next-x 0)
+        (setf x 0))
+      (when (>= next-x 640)
+        (setf x 640)))
+
+    (let* ((camera (camera (current-app-state)))
+           (modified-camera-x (+ (car camera) (* x-move-direction x-velocity))))
+      (when (>= modified-camera-x 0)
+        (setf (car camera) modified-camera-x)))
 
     ;; TODO: update subobjects
     (dolist (weapon weapons)

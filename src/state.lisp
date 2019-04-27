@@ -12,7 +12,9 @@
    (actor :initform nil
           :accessor actor)
    (objects :initform (list)
-            :reader objects)))
+            :reader objects)
+   (camera :initform (cons 0 0)
+           :accessor camera)))
 
 (defgeneric init (state))
 (defgeneric process-input (state direction keysym))
