@@ -4,6 +4,7 @@
   :license "MIT"
   :depends-on (:sdl2
                :sdl2-image
+               :sdl2-ttf
                :livesupport)
   :pathname "src"
   :components ((:file "package")

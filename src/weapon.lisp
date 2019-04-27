@@ -15,15 +15,22 @@
    (current-cooldown :initform 0
                      :reader current-cooldown)))
 
-(defmethod make-shot ((wp weapon) x y x-move-direction)
-  (let ((ch (make-instance '9x19
-                           :x x :y y
-                           :x-move-direction x-move-direction
-                           :sprite :9x19)))
-    (add-object (current-app-state) ch)))
+(defmethod make-shot ((wp weapon) x y)
+  "X and Y are local coordinates to spawn the bullet at"
+  (with-slots (parent) wp
+    (with-slots ((parent-x x) (parent-y y) (parent-x-move-direction pos-direction)) parent
+
+      (let ((spawn-x (+ parent-x (if (> parent-x-move-direction 0) x 0)))
+            (spawn-y (+ parent-y y)))
+
+        (let ((ch (make-instance '9x19
+                                 :x spawn-x :y spawn-y
+                                 :x-move-direction parent-x-move-direction
+                                 :sprite :9x19)))
+          (add-object (current-app-state) ch))))))
 
 ;;(defmethod update ((wp weapon) &key dt &allow-other-keys)
-''  (format t "updating weapon ~a~&" wp)
+;;  (format t "updating weapon ~a~&" wp)
 
 ;;(defmethod render ((wp weapon))
 ;;  (with-slots (sprite) wp

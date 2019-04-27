@@ -18,27 +18,47 @@
   (sdl2:create-texture-from-surface
    renderer (sdl2-image:load-image path-to-file)))
 
+(defun load-font (path-to-file &key (font-size 16))
+  (sdl2-ttf:open-font path-to-file font-size))
+
 (defun add-sprite (sprite-name path-to-file &key (blend-mode :none))
-  (etypecase sprite-name
-    (keyword
-     (with-slots (sdl2-renderer sprites) *renderer*
-       (if (assoc sprite-name sprites)
-           (error "Sprite with name ~a already registered" sprite-name))
-       (let ((texture (load-texture sdl2-renderer path-to-file)))
-         (sdl2:set-texture-blend-mode texture blend-mode)
-         (setf sprites (acons sprite-name texture sprites))
-         sprite-name)))))
+  (check-type sprite-name keyword)
+
+  (with-slots (sdl2-renderer sprites) *renderer*
+    (if (assoc sprite-name sprites)
+        (error "Sprite ~a already registered" sprite-name))
+    (let ((texture (load-texture sdl2-renderer path-to-file)))
+      (sdl2:set-texture-blend-mode texture blend-mode)
+      (setf sprites (acons sprite-name texture sprites))
+      sprite-name)))
+
+(defun add-font (font-name path-to-file &key (font-size 16))
+  (check-type font-name keyword)
+
+  (with-slots (fonts) *renderer*
+    (if (assoc font-name fonts)
+        (error "Font ~a already registered" font-name))
+    (let ((font (load-font path-to-file :font-size font-size)))      
+      (setf fonts (acons font-name font fonts))
+      font-name)))
 
 (defun remove-sprite (sprite-name)
-  (etypecase sprite-name
-    (keyword (with-slots (sprites) *renderer*
-               (setf sprites (remove sprite-name sprites :key #'car))
-               t))))
+  (check-type sprite-name keyword)
+  
+  (with-slots (sprites) *renderer*
+    (setf sprites (remove sprite-name sprites :key #'car))
+    t))
 
 (defun get-sprite-texture (sprite-name)
-  (etypecase sprite-name
-    (keyword (cdr (assoc sprite-name
-                         (renderer-sprites *renderer*))))))
+  (check-type sprite-name keyword)
+
+  (cdr (assoc sprite-name
+              (renderer-sprites *renderer*))))
+
+(defun get-font (font-name)
+  (check-type font-name keyword)
+
+  (cdr (assoc font-name (renderer-fonts *renderer*))))
 
 (defun sprite-width (sprite-name)
   (sdl2:texture-width (get-sprite-texture sprite-name)))
@@ -60,7 +80,15 @@
          (w (round (* scale (sdl2:texture-width texture))))
          (h (round (* scale (sdl2:texture-height texture))))
          (dest-rect (sdl2:make-rect x y w h)))
-    (sdl2:set-texture-blend-mode texture blendmode)
+    (sdl2:set-texture-blend-mode texture blendmode)    
     (if flip (sdl2:render-copy-ex sdl2-renderer texture :dest-rect dest-rect :flip (list flip))
         (sdl2:render-copy sdl2-renderer texture :dest-rect dest-rect))))
 
+(defun draw-text (font-name text x y &key (color '(0 0 0)) (alpha 0))
+  (destructuring-bind (r g b) color
+    (with-slots (sdl2-renderer) *renderer*
+      (let ((font (get-font font-name)))
+        (let* ((surface (sdl2-ttf:render-text-solid font text r g b alpha))
+               (texture (sdl2:create-texture-from-surface sdl2-renderer surface))
+               (dest-rect (sdl2:make-rect x y (sdl2:texture-width texture) (sdl2:texture-height texture))))
+          (sdl2:render-copy sdl2-renderer texture :dest-rect dest-rect))))))

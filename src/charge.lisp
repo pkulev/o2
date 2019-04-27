@@ -9,8 +9,9 @@
 ;;(defmethod update ((ch weapon-charge) &key dt &allow-other-keys)
 ;;  (format t "Actually updating charge."))
 
-;;(defmethod render ((ch weapon-charge))
-;;  (format t "Actually rendering charge."))
+(defmethod render ((ch weapon-charge))
+  (with-slots (x y sprite) ch
+    (when sprite (draw-sprite sprite x  y))))
 
 (defclass 9x19 (weapon-charge)
   ((damage :initform (cons 25 35))

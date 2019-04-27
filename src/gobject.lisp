@@ -32,7 +32,13 @@
                     :allocation :class)
    (sprite :initform nil
            :initarg :sprite
-           :reader sprite)))
+           :reader sprite)
+
+   (parent :initform nil
+           :reader parent)
+
+   (children :initform (list)
+             :reader children)))
 
 (defgeneric update (object &key &allow-other-keys)
   (:documentation "Update game object state."))
@@ -57,6 +63,21 @@
             (sdl2:make-rect x y w h)))
         (sdl2:make-rect x y 0 0))))
 
+(defmethod add-child ((object game-object) (child game-object))
+  (with-slots (children) object
+    (with-slots (parent) child
+      (unless (find child children)
+        (push child children)
+        (setf parent object)))))
+(defmethod remove-child ((object game-object) (child game-object))
+  (with-slots (children) object
+    (with-slots (parent) child
+      (remove child parent)
+      (setf parent nil))))
+
+(defmethod update :after ((object game-object) &key &allow-other-keys)
+  (dolist (child (children object))
+    (update child)))
 
 (defclass enemy (game-object transform)
   ((render-priority :initform 1
@@ -76,10 +97,10 @@
            :reader health)
    (armor :initform 100
           :reader armor)
+
    (weapon :initform nil
            :accessor weapon)
-   (weapons :initform (list)
-            :accessor weapons)
+
    (fire? :initform nil
           :accessor fire?)
 
@@ -107,6 +128,15 @@
    (sitting-sprite :initform nil
                    :initarg :sitting-sprite
                    :accessor sitting-sprite)))
+
+(defmethod select-weapon ((player james) weapon-class-name)
+  (with-slots (children weapon) player
+    (let ((child-weapon (find-if
+                       (lambda (child) (typep child weapon-class-name))
+                       children)))
+      (if child-weapon
+          (setf weapon child-weapon)
+          (error (format nil "Weapon ~A isn't a child of the player" weapon-class-name))))))
 
 (defmethod update :before ((tr physical) &key (dt 1) &allow-other-keys)
   (with-slots (x y
@@ -141,7 +171,7 @@
                fire? jumping?
                y y-velocity
                x x-velocity x-move-direction
-               pos-direction sprite player)
+               pos-direction sprite) player
     ;; FIXME: 400 is the hardcoded floor
     (if (not (<= (+ y y-velocity) 400))
         (setf jumping? nil))
@@ -161,16 +191,11 @@
         (setf (car camera) modified-camera-x))
       (setf (cdr camera) modified-camera-y))
 
-    ;; TODO: update subobjects
-    (dolist (weapon weapons)
-      (update weapon))
-
     (when fire?
       ;;(make-shot weapon x y barrel-x barrel-y))))
       (make-shot weapon
-                 (+ x (sprite-width sprite))
-                 (+ y (round (/ (sprite-height sprite) 3)))
-                 pos-direction)
+                 (sprite-width sprite)
+                 (round (/ (sprite-height sprite) 3)))
       (setf fire? nil))))
 
 (defmethod render ((player james))

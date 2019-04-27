@@ -13,6 +13,8 @@
 (defun res/snd (file-name)
   (merge-pathnames file-name (merge-pathnames #p"snd/" (res))))
 
+(defun res/fonts (file-name)
+  (merge-pathnames file-name (merge-pathnames #p"fonts/" (res))))
 
 (defclass application ()
   ((states :initform (make-hash-table)
@@ -55,6 +57,7 @@
 
 (defmethod start ((app application))
   (sdl2-image:init '(:png))
+  (sdl2-ttf:init)
   (sdl2:with-init (:video)
     (sdl2:with-window (win :title "o2"
                            :w 1024
@@ -63,6 +66,7 @@
                           :flags '(:accelerated :presentvsync))
         (let* ((renderer (make-instance 'renderer :renderer ren))
                current-frame)
+
           (set-current-renderer renderer)
           (setf (slot-value app 'renderer) renderer)
 
@@ -72,28 +76,34 @@
           (add-sprite :bad-guy (res/gfx "bad-guy-placeholder.png"))
           (add-sprite :9x19 (res/gfx "9x19.png"))
 
+          (add-font :ubuntu (res/fonts "Ubuntu-R.ttf") :font-size 16)
+
           (register-state app 'ingame-state :ingame)
           (set-state app :ingame)
 
           (with-slots ((state current-state)) app
-            (livesupport:continuable (sdl2:with-event-loop (:method :poll)
-              (:keydown (:keysym keysym)
-                        (process-input state :keydown keysym))
-              (:keyup (:keysym keysym)
-                      (process-input state :keyup keysym))
-              (:idle ()
-                     (setf current-frame (sdl2:get-ticks))
-                     ;; TODO move out to :before and :after render
-                     (livesupport:update-repl-link)
-                     (sdl2:render-clear ren)
-                     (update state)
-                     (render state)
-                     (sdl2:render-present ren)
-                     (let ((current-speed (- (sdl2:get-ticks)
-                                             current-frame)))
-                       (when (< current-speed +delay+)
-                         (sdl2:delay (round (- +delay+ current-speed))))))
-              (:quit ()
-                     (sdl2-image:quit)
-                     (setf *application* nil)
-                     t)))))))))
+            (livesupport:continuable
+              (sdl2:with-event-loop (:method :poll)
+                (:keydown (:keysym keysym)
+                          (process-input state :keydown keysym))
+                (:keyup (:keysym keysym)
+                        (process-input state :keyup keysym))
+                (:idle ()
+                       (setf current-frame (sdl2:get-ticks))
+                       ;; TODO move out to :before and :after render
+                       (livesupport:update-repl-link)
+                       (sdl2:render-clear ren)
+                       (update state)
+                       (render state)
+                       (sdl2:render-present ren)
+                       (let ((current-speed (- (sdl2:get-ticks)
+                                               current-frame)))
+                         (when (< current-speed +delay+)
+                           (sdl2:delay (round (- +delay+ current-speed))))))
+                (:quit ()
+                       (sdl2-ttf:close-font (get-font :ubuntu))
+                       (setf *application* nil)
+
+                       (sdl2-image:quit)
+                       (sdl2-ttf:quit)
+                       t)))))))))

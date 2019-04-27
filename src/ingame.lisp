@@ -13,20 +13,21 @@
                                :x 50 :y 400
                                :sprite :player
                                :sitting-sprite :player-sitting))
+    (add-child actor (make-instance 'G17
+                                    :ammo 32
+                                    :current-ammo 17))
+    (select-weapon actor 'G17)
+
 
     (add-object ingame
                 (make-instance 'background
                                :sprite :background))
 
-    
     (add-object ingame actor)
-    (setf (weapon actor) (make-instance 'G17
-                                        :ammo 32
-                                        :current-ammo 17))
-    (push (weapon actor) (weapons actor))
+
 
     ;; bad guy
-    (add-object ingame 
+    (add-object ingame
                 (make-instance 'enemy
                                :x 700 :y 400
                                :sprite :bad-guy))
