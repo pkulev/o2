@@ -150,9 +150,12 @@
         (setf x 640)))
 
     (let* ((camera (camera (current-app-state)))
-           (modified-camera-x (+ (car camera) (* x-move-direction x-velocity))))
+           (modified-camera-x (+ (car camera) (* x-move-direction x-velocity)))
+           (modified-camera-y (+ (cdr camera) y-velocity)))
+
       (when (>= modified-camera-x 0)
-        (setf (car camera) modified-camera-x)))
+        (setf (car camera) modified-camera-x))
+      (setf (cdr camera) modified-camera-y))
 
     ;; TODO: update subobjects
     (dolist (weapon weapons)
