@@ -38,4 +38,5 @@
 (defmethod add-object ((state state) (object game-object))
   (with-slots (objects) state
     (push object objects)
+    (setf objects (sort objects #'< :key #'(lambda (it) (render-priority it))))
     object))
