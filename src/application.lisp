@@ -60,6 +60,13 @@
   (or (gethash state-name (states app) nil)
       (error "No state with name ~S" state-name)))
 
+(defmacro continuable (&body body)
+  "A macro to disable livesupport when in SLIME"
+  #+slynk
+  `(livesupport:continuable ,@body)
+  #-slynk
+  `(progn ,@body))
+
 (defmethod start ((app application))
   (sdl2-image:init '(:png))
   (sdl2-ttf:init)
@@ -87,7 +94,7 @@
           (set-state app :ingame)
 
           (with-slots ((state current-state)) app
-            (livesupport:continuable
+            (continuable
               (sdl2:with-event-loop (:method :poll)
                 (:keydown (:keysym keysym)
                           (process-input state :keydown keysym))
@@ -96,7 +103,10 @@
                 (:idle ()
                        (setf current-frame (sdl2:get-ticks))
                        ;; TODO move out to :before and :after render
+
+                       #+slynk
                        (livesupport:update-repl-link)
+
                        (sdl2:render-clear ren)
                        (update state)
                        (render state)

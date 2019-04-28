@@ -6,6 +6,7 @@
                :sdl2-image
                :sdl2-ttf
                :local-time
+               #+slynk
                :livesupport)
   :pathname "src"
   :components ((:file "package")
@@ -18,4 +19,7 @@
                (:file "renderer")
                (:file "state")
                (:file "ingame")
-               (:file "application")))
+               (:file "application"))
+  :build-operation "asdf:program-op"
+  :build-pathname "../o2"
+  :entry-point "o2:main")
