@@ -17,6 +17,7 @@
                (:file "background")
                (:file "charge")
                (:file "weapon")
+               (:file "james")
                (:file "renderer")
                (:file "state")
                (:file "ingame")
