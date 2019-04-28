@@ -40,3 +40,9 @@
     (push object objects)
     (setf objects (sort objects #'< :key #'(lambda (it) (render-priority it))))
     object))
+
+(defmethod remove-object ((state state) (object game-object))
+  (with-slots (objects) state
+    (setf objects
+          (sort (remove object objects) #'< :key #'(lambda (it) (render-priority it))))))
+

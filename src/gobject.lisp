@@ -175,7 +175,7 @@
         (with-slots (children) parent
           (remove-child parent obj))))
     ;; Remove the object from the global object list
-    (setf objects (remove obj objects))))
+    (remove-object (current-app-state) obj)))
 
 (defclass score-display (game-object)
   ((render-priority :initform 10
