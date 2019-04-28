@@ -13,6 +13,7 @@
                (:file "o2")
                (:file "gobject"
                 :depends-on ("charge"))
+               (:file "ui")
                (:file "background")
                (:file "charge")
                (:file "weapon")

@@ -185,18 +185,6 @@
     ;; Remove the object from the global object list
     (remove-object (current-app-state) obj)))
 
-(defclass score-display (game-object)
-  ((render-priority :initform 10
-                    :accessor render-priority
-                    :allocation :class)))
-
-(defmethod render ((sc-obj score-display))
-  (draw-text :ubuntu
-             (format nil "Score: ~A"
-                     (slot-value (current-app-state) 'score))
-             0 0
-             :color '(255 255 255)))
-
 (defclass james (game-object physical)
   ((render-priority :initform 2
                     :allocation :class)

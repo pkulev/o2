@@ -18,7 +18,6 @@
                                     :current-ammo 17))
     (select-weapon actor 'G17)
 
-
     (add-object ingame
                 (make-instance 'background
                                :x -512 :y -385
@@ -26,11 +25,15 @@
 
     (add-object ingame actor)
 
-
     ;; bad guy
     (add-object ingame (make-instance 'enemy-spawner))
 
-    (add-object ingame (make-instance 'score-display))))
+    (add-object ingame (make-instance 'text-widget
+                                      :x 0 :y 0
+                                      :data-getter
+                                      #'(lambda ()
+                                          (format nil "Score: ~A"
+                                                  (score (current-app-state))))))))
 
 (defmethod render ((ingame ingame-state))
   (with-slots (score objects) ingame
