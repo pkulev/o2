@@ -5,6 +5,7 @@
   :depends-on (:sdl2
                :sdl2-image
                :sdl2-ttf
+               :local-time
                :livesupport)
   :pathname "src"
   :components ((:file "package")

@@ -94,18 +94,26 @@
 
 (defmethod update :before ((en enemy) &key (dt 1) &allow-other-keys)
   (with-slots (actor camera) (current-app-state)
-    (with-slots ((player-x x)) actor
-      (with-slots (x x-accel x-move-direction) en
+    (with-slots ((player-x x) (player-y y)) actor
+      (with-slots (x x-accel x-move-direction y) en
+        (let* ((player-x-w/-camera (+ player-x (car camera)))
+               (player-y-w/-camera (+ player-y (cdr camera)))
+               (player-rect (sdl2:make-rect
+                             player-x-w/-camera
+                             player-y-w/-camera
+                             (sprite-width :player) (sprite-height :player)))
+              (enemy-rect (sdl2:make-rect x y (sprite-width :bad-guy) (sprite-height :bad-guy))))
 
-        (setf x-move-direction
-              (cond
-                ((> (+ player-x (car camera)) x)
-                 1)
-                ((< (+ player-x (car camera)) x)
-                 -1)
-                (t 0)))
-
-        (setf x-accel 1)))))
+          (if (sdl2:has-intersect enemy-rect player-rect)
+              ;; If the enemy touches the player, stop and damage the player
+              (progn
+                (setf x-move-direction 0)
+                (setf x-accel 0)
+                (damage-player actor))
+              ;; Otherwise, move towards the player
+              (progn
+                (setf x-move-direction (if (> player-x-w/-camera x) 1 -1))
+                (setf x-accel 1))))))))
 
 (defmethod render :after ((en enemy))
   (with-slots (camera) (current-app-state)
@@ -134,6 +142,8 @@
                     :allocation :class)
    (health :initform 100
            :reader health)
+   (max-health :initform 100
+               :reader max-health)
    (armor :initform 100
           :reader armor)
 
@@ -166,7 +176,15 @@
              :accessor sitting?)
    (sitting-sprite :initform nil
                    :initarg :sitting-sprite
-                   :accessor sitting-sprite)))
+                   :accessor sitting-sprite)
+
+   ;; unix-to-timestamp 0 is definetly less than any other time
+   (last-hit-time :initform (local-time:unix-to-timestamp 0)
+                  :accessor last-hit-time)
+
+   ;; amount of seconds when that the player is invincible to enemy damage
+   (invinc-seconds :initform 2
+                   :accessor invinc-second)))
 
 (defmethod select-weapon ((player james) weapon-class-name)
   (with-slots (children weapon) player
@@ -176,6 +194,20 @@
       (if child-weapon
           (setf weapon child-weapon)
           (error (format nil "Weapon ~A isn't a child of the player" weapon-class-name))))))
+
+(defmethod is-invincible ((player james))
+  (with-slots (last-hit-time invinc-seconds) player
+    (not (local-time:timestamp> (local-time:now) (local-time:timestamp+ last-hit-time invinc-seconds :sec)))))
+
+;; TODO: unify into hurt somehow
+(defmethod damage-player ((player james))
+  (with-slots (health last-hit-time invinc-seconds) player
+    (if (not (is-invincible player))
+        (progn
+          (setf last-hit-time (local-time:now))
+          (setf health (- health 10))
+          (if (<= health 0)
+              (destroy player))))))
 
 (defmethod update :before ((tr physical) &key (dt 1) &allow-other-keys)
   (with-slots (x y
@@ -244,6 +276,14 @@
           (when sprite (draw-sprite sprite x y :flip flip))
           ;; FIXME: 30 is a hardcoded value of leg difference when sitting
           (when sitting-sprite (draw-sprite sitting-sprite x (+ y 30) :flip flip))))))
+
+(defmethod render :after ((player james))
+  (with-slots (health max-health x y) player
+    (draw-text
+     :ubuntu
+     (format nil "~A/~A ~A" health max-health (if (is-invincible player) "[I]" ""))
+     x y
+     :color '(255 255 255))))
 
 (defmethod move-left ((player james))
   (with-slots (x-accel x-max-accel x-move-direction pos-direction) player
