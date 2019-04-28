@@ -158,7 +158,8 @@
       (let ((damage (+ (car damage-range) (random (cdr damage-range)))))
         (setf health (- health damage))
         (when (< health 0)
-          (destroy en))))))
+          (destroy en)
+          (incf (slot-value (current-app-state) 'score)))))))
 
 (defmethod destroy ((obj game-object))
   (with-slots (objects) (current-app-state)
@@ -174,6 +175,18 @@
           (remove-child parent obj))))
     ;; Remove the object from the global object list
     (setf objects (remove obj objects))))
+
+(defclass score-display (game-object)
+  ((render-priority :initform 10
+                    :accessor render-priority
+                    :allocation :class)))
+
+(defmethod render ((sc-obj score-display))
+  (draw-text :ubuntu
+             (format nil "Score: ~A"
+                     (slot-value (current-app-state) 'score))
+             0 0
+             :color '(255 255 255)))
 
 (defclass james (game-object physical)
   ((render-priority :initform 2

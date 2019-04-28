@@ -14,7 +14,11 @@
    (objects :initform (list)
             :reader objects)
    (camera :initform (cons 0 0)
-           :accessor camera)))
+           :accessor camera)
+
+   ;; FIXME: is this really the best place for it?
+   (score :initform 0
+          :accessor score)))
 
 (defgeneric init (state))
 (defgeneric process-input (state direction keysym))
