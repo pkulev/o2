@@ -11,13 +11,13 @@
   :pathname "src"
   :components ((:file "package")
                (:file "o2")
-               (:file "gobject"
-                :depends-on ("charge"))
+               (:file "gobject")
                (:file "ui")
                (:file "background")
                (:file "charge")
-               (:file "weapon")
                (:file "james")
+               (:file "enemy")
+               (:file "weapon")
                (:file "renderer")
                (:file "state")
                (:file "ingame")
