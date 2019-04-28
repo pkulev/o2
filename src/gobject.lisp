@@ -70,6 +70,7 @@
       (unless (find child children)
         (push child children)
         (setf parent object)))))
+
 (defmethod remove-child ((object game-object) (child game-object))
   (with-slots (children) object
     (with-slots (parent) child
@@ -206,11 +207,6 @@
 
    (collider :initform nil
              :accessor collider)
-
-   (move-speed-v :initform 20
-                 :reader move-speed-v)
-   (move-speed-h :initform 15
-                 :reader move-speed-h)
 
    ;; Jumping
    (jumping? :initform nil
