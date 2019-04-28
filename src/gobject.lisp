@@ -245,7 +245,12 @@
           (setf last-hit-time (local-time:now))
           (setf health (- health 10))
           (if (<= health 0)
-              (destroy player))))))
+              ;; Restart the game
+              ;; FIXME: this is kinda ugly
+              (progn
+                (deregister-state *application* :ingame)
+                (register-state *application* 'ingame-state :ingame)
+                (set-state *application* :ingame)))))))
 
 (defmethod update :before ((tr physical) &key (dt 1) &allow-other-keys)
   (with-slots (x y

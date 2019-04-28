@@ -30,6 +30,11 @@
 (defun current-app-state ()
   (current-state *application*))
 
+(defun deregister-state (app state-name)
+  (with-slots (states) app
+    (when (gethash state-name states)
+      (setf (gethash state-name states) nil))))
+
 (defun register-state (app state-class state-name)
   (with-slots ((states states)
                (ren renderer)
