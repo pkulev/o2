@@ -33,4 +33,5 @@
 
 (defmethod add-object ((state state) (object game-object))
   (with-slots (objects) state
-    (push object objects)))
+    (push object objects)
+    object))

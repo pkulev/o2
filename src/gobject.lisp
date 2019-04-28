@@ -49,9 +49,10 @@
     nil))
 
 (defmethod render ((object game-object))
-  (with-slots (x y sprite) object
+  (with-slots (x y sprite children) object
     (with-slots (camera) (current-app-state)
-      (when sprite (draw-sprite sprite (- x (car camera)) (- y (cdr camera)))))))
+      (when sprite (draw-sprite sprite (- x (car camera)) (- y (cdr camera)))))
+    (dolist (child children) (render child))))
 
 (defmethod get-rect ((object game-object))
   (with-slots (x y sprite) object
@@ -72,12 +73,38 @@
 (defmethod remove-child ((object game-object) (child game-object))
   (with-slots (children) object
     (with-slots (parent) child
-      (remove child parent)
+      (setf children (remove child children))
       (setf parent nil))))
 
 (defmethod update :after ((object game-object) &key &allow-other-keys)
   (dolist (child (children object))
     (update child)))
+
+(defclass enemy-spawner (game-object)
+  ((last-enemy-spawned :initform (local-time:unix-to-timestamp 0))))
+
+(defmethod update :before ((spawner enemy-spawner) &key &allow-other-keys)
+  (with-slots (children last-enemy-spawned) spawner
+    ;; Allow up to 5 enemies alive, spawn them every five seconds if there's less
+    (when (and (< (length children) 5)
+               (local-time:timestamp> (local-time:now) (local-time:timestamp+ last-enemy-spawned 5 :sec)))
+      (setf last-enemy-spawned (local-time:now))
+
+      (with-slots (actor camera) (current-app-state)
+        (with-slots ((player-x x)) actor
+          (let* ((player-x-w/-camera (+ player-x (car camera)))
+                 (spawn-x
+                   ;; Randomly (50%) spawn enemy on the left or on the right of the player
+                   (if (> (random 2) 0)
+                       ;; On the right
+                       (+ player-x-w/-camera 1024)
+                       ;; On the left
+                       (- player-x-w/-camera 1024))))
+            (add-child spawner
+                       (add-object (current-app-state)
+                                   (make-instance 'enemy
+                                                  :x spawn-x :y 400
+                                                  :sprite :bad-guy)))))))))
 
 (defclass enemy (game-object physical)
   ((render-priority :initform 1
@@ -90,7 +117,7 @@
           :reader armor)
    (weapon :initform nil)
 
-   (x-max-velocity :initform 10)))
+   (x-max-velocity :initform 5)))
 
 (defmethod update :before ((en enemy) &key (dt 1) &allow-other-keys)
   (with-slots (actor camera) (current-app-state)
@@ -135,6 +162,17 @@
 
 (defmethod destroy ((obj game-object))
   (with-slots (objects) (current-app-state)
+    (with-slots (parent children) obj
+      ;; Also destroy children
+      (dolist (child children)
+        (destroy child))
+
+      ;; Disconnect from parent, if there is one.
+      ;; This also removes the parent reference from the child
+      (when parent
+        (with-slots (children) parent
+          (remove-child parent obj))))
+    ;; Remove the object from the global object list
     (setf objects (remove obj objects))))
 
 (defclass james (game-object physical)

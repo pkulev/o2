@@ -28,10 +28,7 @@
 
 
     ;; bad guy
-    (add-object ingame
-                (make-instance 'enemy
-                               :x 700 :y 400
-                               :sprite :bad-guy))
+    (add-object ingame (make-instance 'enemy-spawner))
 
     ;; TODO: implement sorting by render-priority
     (setf (slot-value ingame 'objects) (reverse (objects ingame)))))
