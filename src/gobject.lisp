@@ -97,8 +97,6 @@
     (with-slots ((player-x x)) actor
       (with-slots (x x-accel x-move-direction) en
 
-        (draw-text :ubuntu (format nil "~A ~A" x player-x) 0 0 :color '(255 255 255))
-
         (setf x-move-direction
               (cond
                 ((> (+ player-x (car camera)) x)
