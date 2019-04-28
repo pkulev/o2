@@ -10,7 +10,8 @@
   (with-slots (objects camera) (current-app-state)
     (with-slots (x y sprite) ch
       (let ((charge-rect (sdl2:make-rect (+ x (car camera)) y (sprite-width sprite) (sprite-height sprite))))
-        (loop for en in objects
+        (loop named target-iteration
+              for en in objects
               when (typep en 'enemy)
                 do (with-slots ((en-x x) (en-y y) (en-sprite sprite)) en
                      (let ((en-rect (sdl2:make-rect
@@ -18,7 +19,8 @@
                                      (sprite-width en-sprite) (sprite-height en-sprite))))
                        (when (sdl2:has-intersect charge-rect en-rect)
                          (hurt en ch)
-                         (destroy ch))))))
+                         (destroy ch)
+                         (return-from target-iteration))))))
 
       ;; Delete bullets when it's not on the screen anymore
       (when (> x 1100)
