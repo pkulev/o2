@@ -152,6 +152,14 @@
        (- x (car camera)) (- y (cdr camera))
        :color '(255 255 255)))))
 
+(defmethod render ((en enemy))
+    (with-slots (camera) (current-app-state)
+    (with-slots (x y sprite children x-move-direction) en
+      (let ((flip (if (< x-move-direction 0) :none :horizontal)))
+        (when sprite (draw-sprite sprite (- x (car camera)) (- y (cdr camera)) :flip flip))
+
+        (dolist (child children) (render child))))))
+
 (defmethod hurt ((en enemy) (ch weapon-charge))
   (with-slots (health) en
     (with-slots (damage-range) ch
