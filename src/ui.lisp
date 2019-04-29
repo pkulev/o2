@@ -25,8 +25,8 @@
                            :color '(255 255 255))
                 (draw-text :ubuntu (funcall data-getter)
                            (+ x parent-x (- (car camera)))
-                           (+ y parent-y (- (cdr camera))) :color '(255 255 255))))
+                           (+ y parent-y (- (cdr camera))) :color '(255 255 255)))))
  
-          (draw-text :ubuntu (funcall data-getter) x y :color '(255 255 255))))))
+        (draw-text :ubuntu (funcall data-getter) x y :color '(255 255 255)))))
   
 
