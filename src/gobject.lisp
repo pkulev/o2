@@ -1,5 +1,13 @@
 (in-package :o2)
 
+(defclass transform ()
+  ((x :initform 0
+      :initarg :x
+      :accessor x)
+   (y :initform 0
+      :initarg :y
+      :accessor y)))
+
 (defclass physical (transform)
   ((x-velocity :initform 0
                :accessor x-velocity)
@@ -17,14 +25,6 @@
 
    (x-move-direction :initform 0
                      :accessor x-move-direction)))
-
-(defclass transform ()
-  ((x :initform 0
-      :initarg :x
-      :accessor x)
-   (y :initform 0
-      :initarg :y
-      :accessor y)))
 
 (defclass game-object ()
   ((render-priority :initform 0
