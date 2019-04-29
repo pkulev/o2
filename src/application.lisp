@@ -123,5 +123,7 @@
                        (setf *application* nil)
 
                        (sdl2-image:quit)
-                       (sdl2-ttf:quit)
+
+                       ;; FIXME: Exiting breaks stuff because finalizers expect to to not exit
+                       ; (sdl2-ttf:quit)
                        t)))))))))
