@@ -15,8 +15,11 @@
   (setf *renderer* renderer))
 
 (defun load-texture (renderer path-to-file)
-  (sdl2:create-texture-from-surface
-   renderer (sdl2-image:load-image path-to-file)))
+  (let ((surface (sdl2-image:load-image path-to-file)))
+    (sdl2:set-color-key surface
+                        :true (sdl2:map-rgb (sdl2:surface-format surface)
+                                            255 0 255))
+    (sdl2:create-texture-from-surface renderer surface)))
 
 (defun load-font (path-to-file &key (font-size 16))
   (sdl2-ttf:open-font path-to-file font-size))
