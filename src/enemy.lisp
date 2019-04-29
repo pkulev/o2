@@ -37,7 +37,10 @@
           :reader armor)
    (weapon :initform nil)
 
-   (x-max-velocity :initform 5)))
+   (x-max-velocity :initform 5)
+
+   (pos-direction :initform 1
+                  :accessor pos-direction)))
 
 (defun make-enemy (&key x y sprite)
   (let ((enemy (make-instance 'enemy
@@ -55,7 +58,7 @@
 (defmethod update :before ((en enemy) &key (dt 1) &allow-other-keys)
   (with-slots (actor camera) (current-app-state)
     (with-slots ((player-x x) (player-y y)) actor
-      (with-slots (x x-accel x-move-direction y) en
+      (with-slots (x x-accel x-move-direction pos-direction y) en
         (let* ((player-x-w/-camera (+ player-x (car camera)))
                (player-y-w/-camera (+ player-y (cdr camera)))
                (player-rect (sdl2:make-rect
@@ -75,12 +78,13 @@
               ;; Otherwise, move towards the player
               (progn
                 (setf x-move-direction (if (> player-x-w/-camera x) 1 -1))
+                (setf pos-direction x-move-direction)
                 (setf x-accel 1))))))))
 
 (defmethod render ((en enemy))
   (with-slots (camera) (current-app-state)
-    (with-slots (x y sprite children x-move-direction) en
-      (let ((flip (if (< x-move-direction 0) :none :horizontal)))
+    (with-slots (x y sprite children pos-direction) en
+      (let ((flip (if (= pos-direction -1) :none :horizontal)))
         (when sprite (draw-sprite sprite (- x (car camera)) (- y (cdr camera)) :flip flip)
               (dolist (child children) (render child)))))))
 
