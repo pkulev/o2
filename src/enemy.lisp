@@ -5,8 +5,8 @@
 
 (defmethod update :before ((spawner enemy-spawner) &key &allow-other-keys)
   (with-slots (children last-enemy-spawned) spawner
-    ;; Allow up to 5 enemies alive, spawn them every five seconds if there's less
-    (when (and (< (length children) 5)
+    ;; Allow up to 2 enemies alive, spawn them every five seconds if there's less
+    (when (and (< (length children) 2)
                (local-time:timestamp> (local-time:now)
                                       (local-time:timestamp+ last-enemy-spawned 5 :sec)))
       (setf last-enemy-spawned (local-time:now))
@@ -21,10 +21,16 @@
                        (+ player-x-w/-camera 1024)
                        ;; On the left
                        (- player-x-w/-camera 1024))))
-            (add-child spawner
-                       (add-object (current-app-state)
-                                   (make-enemy :x spawn-x :y 400
-                                               :sprite :bad-guy)))))))))
+            (let ((enemy-object (add-object (current-app-state)
+                                            (make-enemy :x spawn-x :y 400
+                                                        :sprite :bad-guy)))
+                  (weapon-object (add-object (current-app-state)
+                                             (make-instance 'G17
+                                                            :ammo 32
+                                                            :current-ammo 17))))
+              (add-child enemy-object weapon-object)
+              (select-weapon enemy-object 'G17)
+              (add-child spawner enemy-object))))))))
 
 (defclass enemy (game-object physical)
   ((render-priority :initform 1
@@ -53,28 +59,21 @@
                               #'(lambda ()
                                   (format nil "~A/~A" (health enemy) (max-health enemy)))))
     enemy))
-                                  
+
 
 (defmethod update :before ((en enemy) &key (dt 1) &allow-other-keys)
   (with-slots (actor camera) (current-app-state)
     (with-slots ((player-x x) (player-y y)) actor
-      (with-slots (x x-accel x-move-direction pos-direction y) en
+      (with-slots (x x-accel x-move-direction pos-direction weapon sprite y) en
         (let* ((player-x-w/-camera (+ player-x (car camera)))
-               (player-y-w/-camera (+ player-y (cdr camera)))
-               (player-rect (sdl2:make-rect
-                             player-x-w/-camera
-                             player-y-w/-camera
-                             (sprite-width :player) (sprite-height :player)))
-               (enemy-rect (sdl2:make-rect x y
-                                           (sprite-width :bad-guy)
-                                           (sprite-height :bad-guy))))
-
-          (if (sdl2:has-intersect enemy-rect player-rect)
-              ;; If the enemy touches the player, stop and damage the player
+               (player-distance (abs (- player-x-w/-camera x))))
+          (if (< player-distance 300)
+              ;; If the enemy is near the player, stop and shoot
               (progn
-                (setf x-move-direction 0)
                 (setf x-accel 0)
-                (damage-player actor))
+                (make-shot weapon
+                           (sprite-width sprite)
+                           (round (/ (sprite-height sprite) 3))))
               ;; Otherwise, move towards the player
               (progn
                 (setf x-move-direction (if (> player-x-w/-camera x) 1 -1))
@@ -94,6 +93,17 @@
       ;; (+ lower-bound (random upper-bound)) is how you do random in CL
       (let ((damage (+ (car damage-range) (random (cdr damage-range)))))
         (setf health (- health damage))
-        (when (< health 0)
+        (when (<= health 0)
           (destroy en)
           (incf (slot-value (current-app-state) 'score)))))))
+
+;; FIXME: this is just a copy of the player's implementation,
+;;        make someone that has weapons a separate trait
+(defmethod select-weapon ((en enemy) weapon-class-name)
+  (with-slots (children weapon) en
+    (let ((child-weapon (find-if
+                         (lambda (child) (typep child weapon-class-name))
+                         children)))
+      (if child-weapon
+          (setf weapon child-weapon)
+          (error (format nil "Weapon ~A isn't a child of the enemy" weapon-class-name))))))

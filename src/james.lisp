@@ -73,20 +73,22 @@
   (with-slots (last-hit-time invinc-seconds) player
     (not (local-time:timestamp> (local-time:now) (local-time:timestamp+ last-hit-time invinc-seconds :sec)))))
 
-;; TODO: unify into hurt somehow
-(defmethod damage-player ((player james))
+;; TODO: put the defgeneric for hurt somewhere
+(defmethod hurt ((player james) (ch weapon-charge))
   (with-slots (health last-hit-time invinc-seconds) player
     (if (not (is-invincible player))
         (progn
           (setf last-hit-time (local-time:now))
-          (setf health (- health 10))
-          (if (<= health 0)
-              ;; Restart the game
-              ;; FIXME: this is kinda ugly
-              (progn
-                (deregister-state *application* :ingame)
-                (register-state *application* 'ingame-state :ingame)
-                (set-state *application* :ingame)))))))
+          (with-slots (damage-range) ch
+            (let ((damage (+ (car damage-range) (random (cdr damage-range)))))
+              (setf health (- health damage))
+              (if (<= health 0)
+                  ;; Restart the game
+                  ;; FIXME: this is kinda ugly
+                  (progn
+                    (deregister-state *application* :ingame)
+                    (register-state *application* 'ingame-state :ingame)
+                    (set-state *application* :ingame)))))))))
 
 (defmethod update ((player james) &key (dt 1) &allow-other-keys)
   (declare (ignorable dt))
@@ -103,8 +105,8 @@
     (let ((next-x (+ x (* x-move-direction x-velocity))))
       (when (<= next-x 0)
         (setf x 0))
-      (when (>= next-x 640)
-        (setf x 640)))
+      (when (>= next-x 412)
+        (setf x 412)))
 
     (let* ((camera (camera (current-app-state)))
            (modified-camera-x (+ (car camera) (* x-move-direction x-velocity)))

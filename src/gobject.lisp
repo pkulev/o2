@@ -93,6 +93,7 @@
       (when parent
         (with-slots (children) parent
           (remove-child parent obj))))
+
     ;; Remove the object from the global object list
     (remove-object (current-app-state) obj)))
 

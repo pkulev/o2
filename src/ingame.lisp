@@ -14,9 +14,10 @@
                  :sprite :player
                  :sitting-sprite :player-sitting))
 
-    (add-child actor (make-instance 'G17
-                                    :ammo 32
-                                    :current-ammo 17))
+    (add-child actor (add-object ingame
+                                 (make-instance 'G17
+                                                :ammo 32
+                                                :current-ammo 17)))
     (select-weapon actor 'G17)
 
     (add-object ingame

@@ -39,8 +39,10 @@
   (with-slots ((states states)
                (ren renderer)
                current-state) app
-    (if (gethash state-name states)
-        (error "State ~a already registered" state-name))
+    ;; FIXME: This disallows swapping registered state,
+    ;; but it's kinda needed for now
+    ;; (if (gethash state-name states)
+    ;;     (error "State ~a already registered" state-name))
     (let ((state (make-instance state-class
                                 :application app
                                 :name state-name

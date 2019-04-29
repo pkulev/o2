@@ -4,23 +4,33 @@
   ((radius :initform 1
            :reader radius)
    (damage-range :initform (cons 0 0)
-           :reader damage-range)))
+                 :reader damage-range)
+   (shooter :initarg :shooter)))
 
 (defmethod update ((ch weapon-charge) &key dt &allow-other-keys)
   (with-slots (objects camera) (current-app-state)
-    (with-slots (x y sprite) ch
-      (let ((charge-rect (sdl2:make-rect (+ x (car camera)) y (sprite-width sprite) (sprite-height sprite))))
-        (loop named target-iteration
-              for en in objects
-              when (typep en 'enemy)
-                do (with-slots ((en-x x) (en-y y) (en-sprite sprite)) en
-                     (let ((en-rect (sdl2:make-rect
-                                     en-x en-y
-                                     (sprite-width en-sprite) (sprite-height en-sprite))))
-                       (when (sdl2:has-intersect charge-rect en-rect)
-                         (hurt en ch)
-                         (destroy ch)
-                         (return-from target-iteration))))))
+    (with-slots (x y shooter sprite) ch
+      (etypecase shooter
+        (james
+         (let ((charge-rect (sdl2:make-rect (+ x (car camera)) y (sprite-width sprite) (sprite-height sprite))))
+           (loop named target-iteration
+                 for en in objects
+                 when (typep en 'enemy)
+                   do (with-slots ((en-x x) (en-y y) (en-sprite sprite)) en
+                        (let ((en-rect (sdl2:make-rect
+                                        en-x en-y
+                                        (sprite-width en-sprite) (sprite-height en-sprite))))
+                          (when (sdl2:has-intersect charge-rect en-rect)
+                            (hurt en ch)
+                            (destroy ch)
+                            (return-from target-iteration)))))))
+        (enemy
+         (with-slots ((player actor)) (current-app-state)
+           (let ((player-rect (get-rect player))
+                 (charge-rect (sdl2:make-rect x y (sprite-width sprite) (sprite-height sprite))))
+             (when (sdl2:has-intersect charge-rect player-rect)
+               (hurt player ch)
+               (destroy ch))))))
 
       ;; Delete bullets when it's not on the screen anymore
       (when (> x 1100)
