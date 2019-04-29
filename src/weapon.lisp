@@ -30,11 +30,12 @@
       ;; If the cooldown already passed, update the last time shot and shoot
       (setf last-shot (local-time:now))
 
-      (with-slots ((parent-x x) (parent-y y) (parent-x-move-direction pos-direction)) parent
-        (destructuring-bind
-            (spawn-x spawn-y)
-            ;; FIXME: this can happen aparently, find out why and fix
-            (when parent
+      ;; FIXME: this can happen aparently, find out why and fix
+      (when parent
+        (with-slots ((parent-x x) (parent-y y) (parent-x-move-direction pos-direction)) parent
+          (destructuring-bind
+              (spawn-x spawn-y)
+
               (etypecase parent
                 (james (list
                         (+ parent-x (if (> parent-x-move-direction 0) x 0))
@@ -42,13 +43,13 @@
                 (enemy (with-slots (camera) (current-app-state)
                          (list
                           (- (+ parent-x (if (> parent-x-move-direction 0) x 0)) (car camera))
-                          (- (+ parent-y y) (cdr camera)))))))
-          (let ((ch (make-instance '9x19
-                                   :x spawn-x :y spawn-y
-                                   :x-move-direction parent-x-move-direction
-                                   :sprite :9x19
-                                   :shooter parent)))
-            (add-object (current-app-state) ch)))))))
+                          (- (+ parent-y y) (cdr camera))))))
+            (let ((ch (make-instance '9x19
+                                     :x spawn-x :y spawn-y
+                                     :x-move-direction parent-x-move-direction
+                                     :sprite :9x19
+                                     :shooter parent)))
+              (add-object (current-app-state) ch))))))))
 
 ;;(defmethod update ((wp weapon) &key dt &allow-other-keys)
 ;;  (format t "updating weapon ~a~&" wp)
