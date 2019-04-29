@@ -83,6 +83,8 @@
           (set-current-renderer renderer)
           (setf (slot-value app 'renderer) renderer)
 
+          (add-sprite :logo (res/gfx "logo.png"))
+
           (add-sprite :background (res/gfx "background-placeholder.png"))
           (add-sprite :player (res/gfx "player-placeholder.png"))
           (add-sprite :player-sitting (res/gfx "player-sitting-placeholder.png"))

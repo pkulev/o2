@@ -25,6 +25,9 @@
 (defmethod render ((menu main-menu-state))
   (with-slots (choise background) menu
     (render background)
+
+    (draw-sprite :logo 150 100)
+
     ;;(draw-rect 0 0 1024 768 83 3 116 255)
     (let* ((button-w 500)
            (button-h 100)
