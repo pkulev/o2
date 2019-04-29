@@ -44,6 +44,22 @@
    (invinc-seconds :initform 2
                    :accessor invinc-second)))
 
+(defun make-james (&key (x 0) (y 0) sprite sitting-sprite)
+  (let ((player (make-instance 'james
+                               :x x :y y
+                               :sprite sprite
+                               :sitting-sprite sitting-sprite)))
+
+    (add-child player (make-instance 'text-widget
+                                     :x 0 :y 0
+                                     :data-getter
+                                     #'(lambda ()
+                                         (format nil "~A/~A ~A"
+                                                 (health player)
+                                                 (max-health player)
+                                                 (if (is-invincible player) "[I]" "")))))
+    player))
+
 (defmethod select-weapon ((player james) weapon-class-name)
   (with-slots (children weapon) player
     (let ((child-weapon (find-if
@@ -73,11 +89,12 @@
                 (set-state *application* :ingame)))))))
 
 (defmethod update ((player james) &key (dt 1) &allow-other-keys)
+  (declare (ignorable dt))
   (with-slots (weapon weapons
                fire? jumping?
                y y-velocity
                x x-velocity x-move-direction
-               pos-direction sprite) player
+               pos-direction sprite children) player
     ;; FIXME: 400 is the hardcoded floor
     (if (not (<= (+ y y-velocity) 400))
         (setf jumping? nil))
@@ -102,23 +119,18 @@
       (make-shot weapon
                  (sprite-width sprite)
                  (round (/ (sprite-height sprite) 3)))
-      (setf fire? nil))))
+      (setf fire? nil))
+
+    (dolist (child children) (update child))))
 
 (defmethod render ((player james))
-  (with-slots (x y sprite pos-direction sitting? sitting-sprite) player
+  (with-slots (x y sprite pos-direction sitting? sitting-sprite children) player
     (let ((flip (if (= pos-direction 1) :none :horizontal)))
       (if (not sitting?)
           (when sprite (draw-sprite sprite x y :flip flip))
           ;; FIXME: 30 is a hardcoded value of leg difference when sitting
-          (when sitting-sprite (draw-sprite sitting-sprite x (+ y 30) :flip flip))))))
-
-(defmethod render :after ((player james))
-  (with-slots (health max-health x y) player
-    (draw-text
-     :ubuntu
-     (format nil "~A/~A ~A" health max-health (if (is-invincible player) "[I]" ""))
-     x y
-     :color '(255 255 255))))
+          (when sitting-sprite (draw-sprite sitting-sprite x (+ y 30) :flip flip))))
+    (dolist (child children) (render child))))
 
 (defmethod move-left ((player james))
   (with-slots (x-accel x-max-accel x-move-direction pos-direction) player

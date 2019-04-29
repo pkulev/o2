@@ -9,10 +9,11 @@
     (setf running t)
 
     ;; player
-    (setf actor (make-instance 'james
-                               :x 50 :y 400
-                               :sprite :player
-                               :sitting-sprite :player-sitting))
+    (setf actor (make-james
+                 :x 50 :y 400
+                 :sprite :player
+                 :sitting-sprite :player-sitting))
+
     (add-child actor (make-instance 'G17
                                     :ammo 32
                                     :current-ammo 17))

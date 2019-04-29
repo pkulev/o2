@@ -11,16 +11,22 @@
 
 (defmethod render ((w text-widget))
   (with-slots (parent x y data-getter) w
-    (format t "drawing '~a' in ~a:~a~&" (funcall data-getter) x y)
     (if parent
         (with-slots (camera) (current-app-state)
           (with-slots ((parent-x x)
                        (parent-y y)) parent
-            (format t "parent ~a:~a" parent-x parent-y)
-            (draw-text :ubuntu (funcall data-getter)
-                       (+ x parent-x (- (car camera)))
-                       (+ y parent-y (- (cdr camera))) :color '(255 255 255))))
 
-        (draw-text :ubuntu (funcall data-getter) x y :color '(255 255 255)))))
+            ;; TODO: refactor-camera: remove james-specific check
+            ;;       james is camera itself, so we just use its coords as offset
+            (if (typep parent 'james)
+                (draw-text :ubuntu (funcall data-getter)
+                           (+ x parent-x)
+                           (+ y parent-y)
+                           :color '(255 255 255))
+                (draw-text :ubuntu (funcall data-getter)
+                           (+ x parent-x (- (car camera)))
+                           (+ y parent-y (- (cdr camera))) :color '(255 255 255))))
+ 
+          (draw-text :ubuntu (funcall data-getter) x y :color '(255 255 255))))))
   
 
