@@ -16,3 +16,9 @@
     (ql:quickload :o2)
     (o2:main)  ; run the game
   #+END_SRC
+
+* Licensing
+
+  The source code is provided under the MIT license, you can find a copy in [[file:CC-BY-SA-4.0][LICENSE]].
+
+  The assets are provided under the CC-BY-SA-4.0 license, you can find a copy in [[file:CC-BY-SA-4.0][CC-BY-SA-4.0]]
