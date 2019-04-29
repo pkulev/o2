@@ -1,6 +1,6 @@
 (in-package :o2)
 
-(defclass weapon (game-object)
+(defclass weapon (transform game-object)
   ((current-ammo :initform 0
                  :initarg :current-ammo
                  :accessor current-ammo)
@@ -39,7 +39,7 @@
               (etypecase parent
                 (james (list
                         (+ parent-x (if (> parent-x-move-direction 0) x 0))
-                        (+ parent-y y)))
+                        (+ parent-y y (- 30))))
                 (enemy (with-slots (camera) (current-app-state)
                          (list
                           (- (+ parent-x (if (> parent-x-move-direction 0) x 0)) (car camera))

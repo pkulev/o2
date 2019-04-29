@@ -86,9 +86,10 @@
           (add-sprite :logo (res/gfx "logo.png"))
 
           (add-sprite :background (res/gfx "background-placeholder.png"))
-          (add-sprite :player (res/gfx "player-placeholder.png"))
+          (add-sprite :player (res/gfx "player-pistol-firing.png"))
           (add-sprite :player-sitting (res/gfx "player-sitting-placeholder.png"))
           (add-sprite :bad-guy (res/gfx "bad-guy-placeholder.png"))
+          (add-sprite :G17 (res/gfx "G17.png"))
           (add-sprite :9x19 (res/gfx "9x19.png"))
 
           (add-font :ubuntu (res/fonts "Ubuntu-R.ttf") :font-size 16)

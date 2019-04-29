@@ -17,7 +17,8 @@
     (add-child actor (add-object ingame
                                  (make-instance 'G17
                                                 :ammo 32
-                                                :current-ammo 17)))
+                                                :current-ammo 17
+                                                :sprite :G17)))
     (select-weapon actor 'G17)
 
     (add-object ingame
