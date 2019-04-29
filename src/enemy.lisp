@@ -23,9 +23,8 @@
                        (- player-x-w/-camera 1024))))
             (add-child spawner
                        (add-object (current-app-state)
-                                   (make-instance 'enemy
-                                                  :x spawn-x :y 400
-                                                  :sprite :bad-guy)))))))))
+                                   (make-enemy :x spawn-x :y 400
+                                               :sprite :bad-guy)))))))))
 
 (defclass enemy (game-object physical)
   ((render-priority :initform 1
@@ -39,6 +38,19 @@
    (weapon :initform nil)
 
    (x-max-velocity :initform 5)))
+
+(defun make-enemy (&key x y sprite)
+  (let ((enemy (make-instance 'enemy
+                              :x x :y y
+                              :sprite sprite)))
+    (add-child enemy
+               (make-instance 'text-widget
+                              :x 0 :y 0
+                              :data-getter
+                              #'(lambda ()
+                                  (format nil "~A/~A" (health enemy) (max-health enemy)))))
+    enemy))
+                                  
 
 (defmethod update :before ((en enemy) &key (dt 1) &allow-other-keys)
   (with-slots (actor camera) (current-app-state)
@@ -64,15 +76,6 @@
               (progn
                 (setf x-move-direction (if (> player-x-w/-camera x) 1 -1))
                 (setf x-accel 1))))))))
-
-(defmethod render :after ((en enemy))
-  (with-slots (camera) (current-app-state)
-    (with-slots (health max-health x y) en
-      (draw-text
-       :ubuntu
-       (format nil "~A/~A" health max-health)
-       (- x (car camera)) (- y (cdr camera))
-       :color '(255 255 255)))))
 
 (defmethod render ((en enemy))
   (with-slots (camera) (current-app-state)
