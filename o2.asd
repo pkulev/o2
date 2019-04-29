@@ -21,6 +21,7 @@
                (:file "renderer")
                (:file "state")
                (:file "ingame")
+               (:file "menu")
                (:file "application"))
   :build-operation "asdf:program-op"
   :build-pathname "../o2"

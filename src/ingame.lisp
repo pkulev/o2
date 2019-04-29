@@ -63,9 +63,10 @@
 (defun ingame-keydown (ingame keysym)
   (with-slots (actor running application) ingame
     (let ((scancode (sdl2:scancode-value keysym)))
-      ;; TODO: pause
+      ;; TODO: replace with pause menu
       (when (sdl2:scancode= scancode :scancode-escape)
-        nil)
+        (setf running nil)
+        (set-state application :main-menu))
 
       (when (or (sdl2:scancode= scancode :scancode-left) (sdl2:scancode= scancode :scancode-a))
         (move-left actor))

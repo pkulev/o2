@@ -74,8 +74,7 @@
     (sdl2:with-window (win :title "o2"
                            :w 1024
                            :h 768)
-      (sdl2:with-renderer (ren win
-                          :flags '(:accelerated :presentvsync))
+      (sdl2:with-renderer (ren win :flags '(:accelerated :presentvsync))
         (let* ((renderer (make-instance 'renderer :renderer ren))
                current-frame)
 
@@ -89,9 +88,11 @@
           (add-sprite :9x19 (res/gfx "9x19.png"))
 
           (add-font :ubuntu (res/fonts "Ubuntu-R.ttf") :font-size 16)
+          (add-font :ubuntu-large (res/fonts "Ubuntu-R.ttf") :font-size 36)
 
+          (register-state app 'main-menu-state :main-menu)
           (register-state app 'ingame-state :ingame)
-          (set-state app :ingame)
+          (set-state app :main-menu)
 
           (with-slots ((state current-state)) app
             (continuable
