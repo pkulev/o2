@@ -2,10 +2,10 @@
 
 * Dependencies
   You need following libraries installed:
-*** sdl2
-*** sdl2-image
-*** sdl2-ttf
-*** libffi
+  - sdl2
+  - sdl2-image
+  - sdl2-ttf
+  - libffi
 
 * Installation
   You need installed and working [[https://www.quicklisp.org][quicklisp]] for it.
