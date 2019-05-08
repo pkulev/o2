@@ -11,7 +11,7 @@
 (defclass physical (transform)
   ((x-velocity :initform 0
                :accessor x-velocity)
-   (x-max-velocity :initform 20
+   (x-max-velocity :initform 200d0
                    :accessor max-x-velocity)
    (x-accel :initform 0
             :accessor x-accel)
@@ -24,10 +24,28 @@
                    :accessor y-max-velocity)
 
    (x-move-direction :initform 0
-                     :accessor x-move-direction)))
+                     :accessor x-move-direction)
+   (rigid-body :initform nil
+               :reader rigid-body
+               :initarg :rigid-body)
+   (shape :initform nil
+          :reader shape
+          :initarg :shape)))
+
+(defmethod cleanup ((p physical))
+  (with-slots (rigid-body shape) p
+    (chipmunk:free-shape shape)
+    (chipmunk:free-body rigid-body)))
 
 (defclass game-object ()
-  ((render-priority :initform 0
+  ((components :initform (list)
+               :initarg :components
+               :accessor components)
+   (systems :initform (list)
+            :initarg :systems
+            :accessor systems)
+
+   (render-priority :initform 0
                     :accessor render-priority
                     :allocation :class)
    (sprite :initform nil
@@ -45,8 +63,12 @@
 
 (defmethod update ((object game-object) &key dt &allow-other-keys)
   (declare (ignorable dt))
-  (with-slots (x y sprite) object
-    nil))
+
+  (run-systems object)
+
+  (with-slots (children) object
+    (dolist (child children)
+      (update child))))
 
 (defmethod render ((object game-object))
   (with-slots (x y sprite children) object
@@ -65,21 +87,25 @@
         (sdl2:make-rect x y 0 0))))
 
 (defmethod add-child ((object game-object) (child game-object))
-  (with-slots (children) object
-    (with-slots (parent) child
-      (unless (find child children)
-        (push child children)
-        (setf parent object)))))
+  (let ((tr (find-component object 'transform-c))
+        (child-tr (find-component child 'transform-c)))
+    (with-accessors ((children children)) tr
+      (with-accessors ((parent parent)) child-tr
+        (unless (find child children)
+          (push child children)
+          (setf parent object))))))
 
 (defmethod remove-child ((object game-object) (child game-object))
-  (with-slots (children) object
-    (with-slots (parent) child
-      (setf children (remove child children))
-      (setf parent nil))))
+  (let ((tr (find-component object 'transform-c))
+        (child-tr (find-component child 'transform-c)))
+    (with-accessors ((children children)) tr
+      (with-accessors ((parent parent)) child-tr
+        (setf children (remove child children))
+        (setf parent nil)))))
 
-(defmethod update :after ((object game-object) &key &allow-other-keys)
-  (dolist (child (children object))
-    (update child)))
+;; (defmethod update :after ((object game-object) &key &allow-other-keys)
+;;   (dolist (child (children object))
+;;     (update child)))
 
 (defmethod destroy ((obj game-object))
   (with-slots (objects) (current-app-state)
@@ -101,7 +127,8 @@
   (with-slots (x y
                x-velocity x-max-velocity
                y-velocity y-max-velocity
-               x-accel x-move-direction) tr
+               x-accel x-move-direction
+               rigid-body) tr
     ;; TODO: check screen boundaries?
 
     ;; FIXME: move it somewhere, this is not a place for a james-specific thing
@@ -112,8 +139,11 @@
 
     ;; horizontal movement
     (when (not (zerop x-accel))
-      (when (> (setf x-velocity (+ x-velocity x-accel)) x-max-velocity)
+      (let ((velocity (chipmunk:velocity rigid-body)))
+        (setf (chipmunk:x velocity) (coerce x-accel 'double-float)))
+      (when (> (+ x-velocity x-accel) x-max-velocity)
         (setf x-velocity x-max-velocity))
+
       (setf x (+ x (* x-velocity x-move-direction dt))))
 
     ;; vertical movement / falling

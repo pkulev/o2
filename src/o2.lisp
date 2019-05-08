@@ -1,6 +1,6 @@
 (in-package :o2)
 
-(defun main (&key (core-is-root t))
+(defun main (&key (core-is-root nil))
   (defparameter +root+
     (if core-is-root
         *default-pathname-defaults*

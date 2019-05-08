@@ -1,32 +1,33 @@
 (in-package :o2)
 
-(defclass widget (transform game-object)
-  ((render-priority :initform 10
-                    :accessor render-priority
-                    :allocation :class)))
-
-(defclass text-widget (widget)
+(defclass text-widget-c (component)
   ((data-getter :initarg :data-getter
-                :accessor data-getter)))
+                :accessor data-getter)
+   (color :initarg :color
+          :accessor color))
 
-(defmethod render ((w text-widget))
-  (with-slots (parent x y data-getter) w
-    (if parent
-        (with-slots (camera) (current-app-state)
-          (with-slots ((parent-x x)
-                       (parent-y y)) parent
+  (:default-initargs :color '(255 255 255)))
 
-            ;; TODO: refactor-camera: remove james-specific check
-            ;;       james is camera itself, so we just use its coords as offset
-            (if (typep parent 'james)
-                (draw-text :ubuntu (funcall data-getter)
-                           (+ x parent-x)
-                           (+ y parent-y)
-                           :color '(255 255 255))
-                (draw-text :ubuntu (funcall data-getter)
-                           (+ x parent-x (- (car camera)))
-                           (+ y parent-y (- (cdr camera))) :color '(255 255 255)))))
- 
-        (draw-text :ubuntu (funcall data-getter) x y :color '(255 255 255)))))
-  
+(defclass text-widget-system (system)
+  ;; FIXME: a UI layer that always draws over other things
+  ((requires :initform '(text-widget-c transform-c))))
 
+(defmethod run-system ((system text-widget-system) components)
+  (destructuring-bind (widget tr) components
+    (with-accessors ((par parent) (pos position)) tr
+      (let* ((static? (null par)) ;; Text is assumed to be static if it has no parent
+             (global-pos (local-to-global-position par pos)))
+        (with-accessors ((getter data-getter) (color color)) widget
+          (let* ((camera-obj (find-with-component (current-app-state) 'camera-tag))
+                 (camera-tr (find-component camera-obj 'transform-c))
+                 (camera-pos (position camera-tr)))
+            (draw-text :ubuntu (funcall getter)
+                       (if static?
+                           (car global-pos)
+                           (- (car global-pos)
+                              (car camera-pos)))
+                       (if static?
+                           (cdr global-pos)
+                           (- (cdr global-pos)
+                              (cdr camera-pos)))
+                       :color color)))))))

@@ -29,6 +29,12 @@
 
 (defmethod init ((state state)))
 
+(defmethod cleanup (what)) ; No cleanup by default
+(defmethod cleanup ((state state))
+  (with-slots (objects) state ;; Clean up all the objects
+    (dolist (object objects)
+      (cleanup object))))
+
 (defmethod update ((state state) &key dt &allow-other-keys)
   (with-slots (running objects) state
     (when running
@@ -38,11 +44,18 @@
 (defmethod add-object ((state state) (object game-object))
   (with-slots (objects) state
     (push object objects)
-    (setf objects (sort objects #'< :key #'(lambda (it) (render-priority it))))
+
+    (setf objects (sort objects #'<
+                        :key #'(lambda (it)
+                                 (let ((render-c (find-component it 'render-c :raise-error nil)))
+                                   ;; If there is a render component, then use it to order objects.
+                                   ;; If there is not, just return zero, since this object does not care
+                                   ;; about being rendered
+                                   (if render-c
+                                       (render-priority render-c)
+                                       0)))))
     object))
 
 (defmethod remove-object ((state state) (object game-object))
   (with-slots (objects) state
-    (setf objects
-          (sort (remove object objects) #'< :key #'(lambda (it) (render-priority it))))))
-
+    (setf objects (remove object objects))))

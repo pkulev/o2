@@ -7,7 +7,8 @@
                :sdl2-ttf
                :local-time
                #+slynk
-               :livesupport)
+               :livesupport
+               :chipmunk)
   :pathname "src"
   :components ((:file "package")
                (:file "o2")
@@ -22,7 +23,8 @@
                (:file "state")
                (:file "ingame")
                (:file "menu")
-               (:file "application"))
+               (:file "application")
+               (:file "components"))
   :build-operation "asdf:program-op"
   :build-pathname "../o2"
   :entry-point "o2:main")

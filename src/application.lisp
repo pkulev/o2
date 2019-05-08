@@ -123,6 +123,11 @@
                            (sdl2:delay (round (- +delay+ current-speed))))))
                 (:quit ()
                        (sdl2-ttf:close-font (get-font :ubuntu))
+
+                       ;; Clean uo states on shutdown
+                       (loop for state being the hash-values of (states *application*)
+                             do (cleanup state))
+
                        (setf *application* nil)
 
                        (sdl2-image:quit)
