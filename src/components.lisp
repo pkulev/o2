@@ -25,8 +25,11 @@
   ((render-priority :initarg :render-priority
                     :accessor render-priority)
    (sprite :initarg :sprite
-           :accessor sprite))
-  (:default-initargs :render-priority 0 :sprite nil))
+           :accessor sprite)
+   (flip :initarg :flip
+         :accessor flip))
+  (:default-initargs :render-priority 0 :sprite nil
+                     :flip :none))
 
 (defclass player-tag (component) ())
 (defclass camera-tag (component) ())
@@ -39,7 +42,7 @@
   ((requires :initform '(transform-c physical-c))))
 
 (defclass player-moveable-system (system)
-  ((requires :initform '(physical-c))
+  ((requires :initform '(physical-c render-c))
 
    (max-move-speed :initform 200d0
                    :accessor max-move-speed
@@ -105,32 +108,35 @@
 
 (defmethod run-system ((system player-moveable-system) found-components)
   (with-accessors ((max-move-speed max-move-speed)) system
-    (destructuring-bind (physical) found-components
+    (destructuring-bind (physical render-comp) found-components
       (with-accessors ((body rigid-body)) physical
-        (let* ((vel (chipmunk:velocity body)))
-          (when (or (sdl2:keyboard-state-p :scancode-right)
-                    (sdl2:keyboard-state-p :scancode-d))
-            (setf (chipmunk:x vel) max-move-speed))
-          (when (or (sdl2:keyboard-state-p :scancode-left)
-                    (sdl2:keyboard-state-p :scancode-a))
-            (setf (chipmunk:x vel) (- max-move-speed)))
+        (with-accessors ((flip flip)) render-comp
+          (let* ((vel (chipmunk:velocity body)))
+            (when (or (sdl2:keyboard-state-p :scancode-right)
+                      (sdl2:keyboard-state-p :scancode-d))
+              (setf (chipmunk:x vel) max-move-speed)
+              (setf flip :none))
+            (when (or (sdl2:keyboard-state-p :scancode-left)
+                      (sdl2:keyboard-state-p :scancode-a))
+              (setf (chipmunk:x vel) (- max-move-speed))
+              (setf flip :horizontal))
 
-          (setf (chipmunk:velocity body) vel))))))
+
+            (setf (chipmunk:velocity body) vel)))))))
 
 (defmethod run-system ((system render-system) found-components)
   (destructuring-bind (render-comp transform-comp) found-components
-    (with-accessors ((sprite sprite)) render-comp
+    (with-accessors ((sprite sprite) (flip flip)) render-comp
       (with-accessors ((local-pos position) (parent parent)) transform-comp
         (let* ((global-pos (local-to-global-position parent local-pos))
                (camera-obj (find-with-component (current-app-state) 'camera-tag))
                (camera-tr (find-component camera-obj 'transform-c))
                (camera-pos (position camera-tr)))
-          ;; TODO: add flipping
           (when sprite (draw-sprite sprite
                                     (- (car global-pos)
                                        (car camera-pos))
                                     (- (cdr global-pos)
-                                       (cdr camera-pos)) :flip :none)))))))
+                                       (cdr camera-pos)) :flip flip)))))))
 
 (defmethod run-system ((system camera-system) found-components)
   (destructuring-bind (tr) found-components
