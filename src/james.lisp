@@ -44,6 +44,8 @@
    (invinc-seconds :initform 2
                    :accessor invinc-second)))
 
+(defconstant +james-collision-type+ 1)
+
 (defun make-james (&key (position (cons 0 0)) sprite sitting-sprite space)
   (let* ((dfloat-x (coerce (car position) 'double-float))
          (dfloat-y (coerce (cdr position) 'double-float))
@@ -61,6 +63,7 @@
                   'james
                   :components (list
                                (make-instance 'player-tag)
+                               (make-instance 'player-moveable-c)
                                (make-instance 'transform-c :position position)
                                (make-instance 'physical-c
                                               :rigid-body rigid-body
@@ -75,6 +78,17 @@
 
                   :sprite sprite
                   :sitting-sprite sitting-sprite)))
+
+    (setf (chipmunk:collision-type shape) +james-collision-type+)
+    (chipmunk:with-collision-handler-for (handler (space +james-collision-type+ +ground-collision-type+))
+      (chipmunk:define-collision-begin-callback player-ground-collision (arbiter space data)
+        (declare (ignorable arbiter space data))
+        (let* ((pl-move-c (find-component player 'player-moveable-c)))
+          (with-accessors ((jumping? jumping?)) pl-move-c
+            (when jumping? (setf jumping? nil))))
+
+        1)
+      (setf (chipmunk:begin-collision-fun handler) 'player-ground-collision))
 
     (add-child
      player

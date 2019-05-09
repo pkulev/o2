@@ -31,6 +31,17 @@
   (:default-initargs :render-priority 0 :sprite nil
                      :flip :none))
 
+(defclass player-moveable-c (component)
+  ((max-move-speed :initarg :max-move-speed
+                   :accessor max-move-speed
+                   :documentation "Maximum player move speed")
+   (jumping-added-velocity :initarg :jumping-added-velocity
+                           :accessor jumping-added-velocity)
+   (jumping? :initform nil
+             :accessor jumping?))
+  (:default-initargs :max-move-speed 200d0
+                     :jumping-added-velocity -200d0))
+
 (defclass player-tag (component) ())
 (defclass camera-tag (component) ())
 
@@ -42,11 +53,7 @@
   ((requires :initform '(transform-c physical-c))))
 
 (defclass player-moveable-system (system)
-  ((requires :initform '(physical-c render-c))
-
-   (max-move-speed :initform 200d0
-                   :accessor max-move-speed
-                   :documentation "Maximum player move speed")))
+  ((requires :initform '(player-moveable-c physical-c render-c))))
 
 (defclass render-system (system)
   ((requires :initform '(render-c transform-c))))
@@ -107,8 +114,11 @@
                        (round (chipmunk:y phys-pos))))))))))
 
 (defmethod run-system ((system player-moveable-system) found-components)
-  (with-accessors ((max-move-speed max-move-speed)) system
-    (destructuring-bind (physical render-comp) found-components
+  (destructuring-bind (player-moveable-comp physical render-comp) found-components
+    (with-accessors ((max-move-speed max-move-speed)
+                     (jmp-added-vel jumping-added-velocity)
+                     (jumping? jumping?))
+        player-moveable-comp
       (with-accessors ((body rigid-body)) physical
         (with-accessors ((flip flip)) render-comp
           (let* ((vel (chipmunk:velocity body)))
@@ -120,7 +130,11 @@
                       (sdl2:keyboard-state-p :scancode-a))
               (setf (chipmunk:x vel) (- max-move-speed))
               (setf flip :horizontal))
-
+            (when (and (or (sdl2:keyboard-state-p :scancode-up)
+                           (sdl2:keyboard-state-p :scancode-space))
+                       (not jumping?))
+              (setf (chipmunk:y vel) jmp-added-vel)
+              (setf jumping? t))
 
             (setf (chipmunk:velocity body) vel)))))))
 
