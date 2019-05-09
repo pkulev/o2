@@ -37,8 +37,12 @@
     (chipmunk:free-shape shape)
     (chipmunk:free-body rigid-body)))
 
+(defparameter *game-object-next-id* 0)
+
 (defclass game-object ()
-  ((components :initform (list)
+  ((id :initform (incf *game-object-next-id*)
+       :reader id)
+   (components :initform (list)
                :initarg :components
                :accessor components)
    (systems :initform (list)
