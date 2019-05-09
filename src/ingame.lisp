@@ -5,9 +5,6 @@
             :accessor running?)
    (space)))
 
-;; FIXME: move this somehwere and make collision types more automatic than just numbering them by hand
-(defconstant +ground-collision-type+ 2)
-
 (defmethod init ((ingame ingame-state))
   (with-slots (actor running space) ingame
     (setf running t)
@@ -18,12 +15,16 @@
       (setf (chipmunk:gravity new-space) gravity)
       (setf space new-space))
 
+    (chipmunk:clear-collision-types)
+    (chipmunk:register-collision-type :james)
+    (chipmunk:register-collision-type :ground)
+
     ;; FIXME: a better place for this?
     (let ((ground (chipmunk:make-segment-shape (chipmunk:body space)
                                                (chipmunk:make-cp-vect 0d0 550d0)
                                                (chipmunk:make-cp-vect 1280d0 550d0)
                                                0d0)))
-      (setf (chipmunk:collision-type ground) +ground-collision-type+)
+      (setf (chipmunk:collision-type ground) :ground)
       (setf (chipmunk:friction ground) 1d0)
       (chipmunk:add space ground))
 
