@@ -123,14 +123,6 @@
     (setf (chipmunk:friction shape) 1d0)
     (setf (chipmunk:position rigid-body) (chipmunk:make-cp-vect dfloat-x dfloat-y))
 
-    ;; (add-child player (make-instance 'text-widget
-    ;;                                  :x 0 :y 0
-    ;;                                  :data-getter
-    ;;                                  #'(lambda ()
-    ;;                                      (format nil "~A/~A ~A"
-    ;;                                              (health player)
-    ;;                                              (max-health player)
-    ;;                                              (if (is-invincible player) "[I]" "")))))
     player))
 
 (defmethod select-weapon ((player james) weapon-class-name)

@@ -8,35 +8,6 @@
       :initarg :y
       :accessor y)))
 
-(defclass physical (transform)
-  ((x-velocity :initform 0
-               :accessor x-velocity)
-   (x-max-velocity :initform 200d0
-                   :accessor max-x-velocity)
-   (x-accel :initform 0
-            :accessor x-accel)
-   (x-max-accel :initform 5
-                :accessor x-max-accel)
-
-   (y-velocity :initform 0
-               :accessor y-velocity)
-   (y-max-velocity :initform 20
-                   :accessor y-max-velocity)
-
-   (x-move-direction :initform 0
-                     :accessor x-move-direction)
-   (rigid-body :initform nil
-               :reader rigid-body
-               :initarg :rigid-body)
-   (shape :initform nil
-          :reader shape
-          :initarg :shape)))
-
-(defmethod cleanup ((p physical))
-  (with-slots (rigid-body shape) p
-    (chipmunk:free-shape shape)
-    (chipmunk:free-body rigid-body)))
-
 (defparameter *game-object-next-id* 0)
 
 (defclass game-object ()
@@ -44,10 +15,10 @@
        :reader id)
    (components :initform (list)
                :initarg :components
-               :accessor components)
+               :reader components)
    (systems :initform (list)
             :initarg :systems
-            :accessor systems)
+            :reader systems)
 
    (render-priority :initform 0
                     :accessor render-priority

@@ -91,9 +91,10 @@
     ))
 
 (defmethod cleanup ((state ingame-state))
+  (when (next-method-p) (call-next-method))
+
   (with-slots (space) state
-    (chipmunk:free-space space))
-  (when (next-method-p) (call-next-method)))
+    (chipmunk:free-space space)))
 
 (defmethod update ((state ingame-state) &key dt &allow-other-keys)
   (declare (ignorable dt))
