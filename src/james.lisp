@@ -61,7 +61,7 @@
                   'james
                   :components (list
                                (make-instance 'player-tag)
-                               (make-instance 'player-moveable-c)
+                               (make-instance 'player-controlable-c)
                                (make-instance 'transform-c :position position)
                                (make-instance 'physical-c
                                               :rigid-body rigid-body
@@ -71,8 +71,8 @@
                                               :render-priority 2))
                   :systems (list
                             (make-instance 'physical-system)
-                            (make-instance 'player-moveable-system)
                             (make-instance 'render-system))
+                            (make-instance 'player-controlable-system)
 
                   :sprite sprite
                   :sitting-sprite sitting-sprite)))
@@ -81,7 +81,7 @@
     (chipmunk:with-collision-handler-for (handler (space :james :ground))
       (chipmunk:define-collision-begin-callback player-ground-collision (arbiter space data)
         (declare (ignorable arbiter space data))
-        (let* ((pl-move-c (find-component player 'player-moveable-c)))
+        (let* ((pl-move-c (find-component player 'player-controlable-c)))
           (with-accessors ((jumping? jumping?)) pl-move-c
             (when jumping? (setf jumping? nil))))
 

@@ -29,7 +29,7 @@
   (:default-initargs :render-priority 0 :sprite nil
                      :flip :none))
 
-(defclass player-moveable-c (component)
+(defclass player-controlable-c (component)
   ((max-move-speed :initarg :max-move-speed
                    :accessor max-move-speed
                    :documentation "Maximum player move speed")
@@ -51,8 +51,8 @@
 (defclass physical-system (system)
   ((requires :initform '(transform-c physical-c))))
 
-(defclass player-moveable-system (system)
-  ((requires :initform '(player-moveable-c physical-c render-c))))
+(defclass player-controlable-system (system)
+  ((requires :initform '(player-controlable-c physical-c render-c shooter-c))))
 
 (defclass render-system (system)
   ((requires :initform '(render-c transform-c))))
@@ -112,12 +112,12 @@
                  (cons (round (chipmunk:x phys-pos))
                        (round (chipmunk:y phys-pos))))))))))
 
-(defmethod run-system ((system player-moveable-system) found-components)
-  (destructuring-bind (player-moveable-comp physical render-comp) found-components
+(defmethod run-system ((system player-controlable-system) found-components)
+  (destructuring-bind (player-controlable-comp physical render-comp shooter-comp) found-components
     (with-accessors ((max-move-speed max-move-speed)
                      (jmp-added-vel jumping-added-velocity)
                      (jumping? jumping?))
-        player-moveable-comp
+        player-controlable-comp
       (with-accessors ((body rigid-body)) physical
         (with-accessors ((flip flip)) render-comp
           (let* ((vel (chipmunk:velocity body)))
