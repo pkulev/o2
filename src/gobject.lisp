@@ -113,54 +113,21 @@
         (setf children (remove child children))
         (setf parent nil)))))
 
-;; (defmethod update :after ((object game-object) &key &allow-other-keys)
-;;   (dolist (child (children object))
-;;     (update child)))
-
 (defmethod destroy ((obj game-object))
-  (with-slots (objects) (current-app-state)
-    (with-slots (parent children) obj
-      ;; Also destroy children
-      (dolist (child children)
-        (destroy child))
+  (let ((tr (find-component obj 'transform-c)))
+    (when tr
+      ;; If there is a transform component, also destroy any children that might exist
+      (with-accessors ((parent parent) (children children)) tr
+        (dolist (child children) (destroy child))
 
-      ;; Disconnect from parent, if there is one.
-      ;; This also removes the parent reference from the child
-      (when parent
-        (with-slots (children) parent
-          (remove-child parent obj))))
+        ;; Disconnect from parent, if there is one.
+        ;; This also removes the parent reference from the child
+        (when parent
+          (with-slots (children) parent
+            (remove-child parent obj))))))
 
-    ;; Remove the object from the global object list
-    (remove-object (current-app-state) obj)))
+  ;; Remove the object from the global object list
+  (remove-object (current-app-state) obj)
 
-(defmethod update :before ((tr physical) &key (dt 1) &allow-other-keys)
-  (with-slots (x y
-               x-velocity x-max-velocity
-               y-velocity y-max-velocity
-               x-accel x-move-direction
-               rigid-body) tr
-    ;; TODO: check screen boundaries?
-
-    ;; FIXME: move it somewhere, this is not a place for a james-specific thing
-    (when (and (typep tr 'james) (not (zerop x-velocity)))
-      (with-slots (sitting?) tr
-        (when sitting?
-          (setf x-velocity (values (floor x-velocity 2))))))
-
-    ;; horizontal movement
-    (when (not (zerop x-accel))
-      (let ((velocity (chipmunk:velocity rigid-body)))
-        (setf (chipmunk:x velocity) (coerce x-accel 'double-float)))
-      (when (> (+ x-velocity x-accel) x-max-velocity)
-        (setf x-velocity x-max-velocity))
-
-      (setf x (+ x (* x-velocity x-move-direction dt))))
-
-    ;; vertical movement / falling
-    ;; TODO: proper ground collision, right now true here
-    ;; means that the object is not falling, while false means it is
-    (if (not (<= (+ y y-velocity) 400))
-        (setf y-velocity 0)
-        (if (< y-velocity y-max-velocity)
-            (setf y-velocity (+ y-velocity 1))))
-    (setf y (+ y y-velocity))))
+  ;; Finally, clean up all the components. After that the object is probably unusable
+  (dolist (comp (components obj)) (cleanup comp)))

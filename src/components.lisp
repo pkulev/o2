@@ -14,9 +14,7 @@
                      :children (list)))
 
 (defclass physical-c (component)
-  ((requires :initform '(transform))
-
-   (rigid-body :initarg :rigid-body
+  ((rigid-body :initarg :rigid-body
                :accessor rigid-body)
    (shape :initarg :shape
           :accessor shape)))
@@ -164,6 +162,15 @@
         (setf (position tr) (cons
                              (- (car tracked-obj-pos) (floor screen-w 2))
                              (- (cdr tracked-obj-pos) (floor screen-h 2))))))))
+
+(defmethod cleanup ((comp physical-c))
+  (with-accessors ((body rigid-body) (shape shape)) comp
+    (with-slots (space) (current-app-state)
+      (chipmunk:remove space shape)
+      (chipmunk:remove space body))
+
+    (chipmunk:free-shape shape)
+    (chipmunk:free-body body)))
 
 (defun local-to-global-position (parent l-position)
   "Translates a local position relatively to the provided parent.

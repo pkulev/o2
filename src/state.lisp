@@ -24,16 +24,18 @@
 (defgeneric process-input (state direction keysym))
 (defgeneric update (state &key &allow-other-keys))
 (defgeneric render (state))
-(defgeneric cleanup (state))
 (defgeneric add-object (state object))
 
 (defmethod init ((state state)))
 
-(defmethod cleanup (what)) ; No cleanup by default
+(defgeneric cleanup (what))
+(defmethod cleanup (what)) ;; A catch-all empty case
+
 (defmethod cleanup ((state state))
   (with-slots (objects) state ;; Clean up all the objects
     (dolist (object objects)
-      (cleanup object))))
+      (with-accessors ((comps components)) object
+        (dolist (comp comps) (cleanup comp))))))
 
 (defmethod update ((state state) &key dt &allow-other-keys)
   (with-slots (running objects) state
