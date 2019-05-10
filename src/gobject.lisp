@@ -62,6 +62,12 @@
    (children :initform (list)
              :reader children)))
 
+(defmethod initialize-instance :after ((obj game-object) &key)
+  ;; Set all the "game-object" slots to this object
+  (dolist (system (systems obj))
+    (with-slots (game-object) system
+      (setf game-object obj))))
+
 (defgeneric update (object &key &allow-other-keys)
   (:documentation "Update game object state."))
 

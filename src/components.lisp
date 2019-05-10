@@ -47,7 +47,8 @@
 
 (defclass system ()
   ((requires :initform '()
-             :accessor requires)))
+             :accessor requires)
+   (game-object :reader game-object)))
 
 (defclass physical-system (system)
   ((requires :initform '(transform-c physical-c))))
