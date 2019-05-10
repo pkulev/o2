@@ -1,6 +1,6 @@
 (in-package :o2)
 
-(defclass weapon (transform game-object)
+(defclass weapon (game-object)
   ((current-ammo :initform 0
                  :initarg :current-ammo
                  :accessor current-ammo)
@@ -9,7 +9,8 @@
          :accessor ammo)
    (max-ammo :initform 0
              :accessor max-ammo)
-   (current-charge :initform nil)
+   (current-charge :initform nil
+                   :accessor current-charge)
    ;; FIXME: change to milliseconds when delta-time is introduced into the codebase
    (cooldown :initform 300000000 ; nsec
              :reader cooldown)
@@ -18,38 +19,61 @@
    (current-cooldown :initform 0
                      :reader current-cooldown)))
 
-(defmethod make-shot ((wp weapon) x y)
-  "X and Y are local coordinates to spawn the bullet at"
-  (with-slots (parent cooldown last-shot) wp
-    (when (local-time:timestamp>
-           (local-time:now)
-           (local-time:timestamp+ last-shot
-                                  ;; Enemies shoot twice as slow
-                                  cooldown
-                                  :nsec))
-      ;; If the cooldown already passed, update the last time shot and shoot
-      (setf last-shot (local-time:now))
+(defclass shooter-c (component)
+  ((shoot? :accessor shoot?
+           :initform nil)
+   (weapons :accessor weapons
+            :initarg :weapons)
+   (current-weapon :accessor current-weapon
+                   :initarg :current-weapon)
+   (bullet-collision-type :accessor bullet-collision-type
+                          :initarg :bullet-collision-type
+                          :documentation "What collision type should be used for callbacks")
+   (bullet-collision-category :accessor bullet-collision-category
+                              :initarg :bullet-collision-category
+                              :documentation "What category should be used for collision checks"))
+  (:default-initargs :weapons (list)))
 
-      ;; FIXME: this can happen aparently, find out why and fix
-      (when parent
-        (with-slots ((parent-x x) (parent-y y) (parent-x-move-direction pos-direction)) parent
-          (destructuring-bind
-              (spawn-x spawn-y)
+(defclass shooter-system (system)
+  ((requires :initform '(shooter-c transform-c))))
 
-              (etypecase parent
-                (james (list
-                        (+ parent-x (if (> parent-x-move-direction 0) x 0))
-                        (+ parent-y y (- 30))))
-                (enemy (with-slots (camera) (current-app-state)
-                         (list
-                          (- (+ parent-x (if (> parent-x-move-direction 0) x 0)) (car camera))
-                          (- (+ parent-y y) (cdr camera))))))
-            (let ((ch (make-instance '9x19
-                                     :x spawn-x :y spawn-y
-                                     :x-move-direction parent-x-move-direction
-                                     :sprite :9x19
-                                     :shooter parent)))
-              (add-object (current-app-state) ch))))))))
+(defmethod run-system ((system shooter-system) found-components)
+  (destructuring-bind (shoot-comp tr) found-components
+    (with-accessors ((shoot? shoot?)
+                     (weaps weapons)
+                     (curr-weap current-weapon)
+                     (coll-type bullet-collision-type)
+                     (coll-cat bullet-collision-category))
+        shoot-comp
+
+      (when shoot?
+        ;; The shot is actually happening, reset the "shoot?" value
+        (setf shoot? nil)
+
+        (let ((the-weapon (find-if (lambda (w) (typep w curr-weap)) weaps)))
+          (when (null the-weapon)
+            ;; TODO: add a way for components to link to the object they're attached to
+            (error "Weapon ~A not found" curr-weap))
+
+          (with-accessors ((cooldown cooldown) (last-shot last-shot)) the-weapon
+            (when (local-time:timestamp>
+                   (local-time:now)
+                   (local-time:timestamp+ last-shot
+                                          cooldown
+                                          :nsec))
+              ;; If the cooldown already passed, update the last time shot and shoot
+              (setf last-shot (local-time:now))
+
+              (with-accessors ((par parent)) tr
+                ;; FIXME: directions
+                (let* ((pos (position tr))
+                       ;; FIXME: actually have some configurable place to put those bullets
+                      (spawn-pos (cons (+ 256 (car pos)) (cdr pos))))
+                  (add-object (current-app-state)
+                              (make-charge-object (current-charge the-weapon)
+                                                  coll-type
+                                                  coll-cat
+                                                  spawn-pos)))))))))))
 
 ;;(defmethod update ((wp weapon) &key dt &allow-other-keys)
 ;;  (format t "updating weapon ~a~&" wp)
@@ -59,7 +83,7 @@
 ;;    (format t "rendering weapon ~a~&" wp)
 
 (defclass G17 (weapon)
-  ((current-charge :initform (find-class '9x19))))
+  ((current-charge :initform *9x19*)))
 
 (defclass MP5SD (weapon)
   ((current-charge :initform (find-class '9x19))))

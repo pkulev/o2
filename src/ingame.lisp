@@ -16,8 +16,18 @@
       (setf space new-space))
 
     (chipmunk:clear-collision-types)
+
     (chipmunk:register-collision-type :james)
     (chipmunk:register-collision-type :ground)
+
+    ;; Bullets the player shoots
+    (chipmunk:register-collision-type :player-bullet)
+
+    (chipmunk:clear-shape-filter-categories)
+    ;; Things that should not collide the player (incl. bullets)
+    (chipmunk:register-shape-filter-category :player)
+    ;; Things that should not collide the enemy, and the player bullets should
+    (chipmunk:register-shape-filter-category :enemy)
 
     ;; FIXME: a better place for this?
     (let ((ground (chipmunk:make-segment-shape (chipmunk:body space)
@@ -34,16 +44,6 @@
                  :sprite :player
                  :sitting-sprite :player-sitting
                  :space space))
-    (add-child
-     actor
-     (add-object ingame
-                 (make-instance 'G17
-                                :components (list
-                                             (make-instance 'transform-c))
-                                :ammo 32
-                                :current-ammo 17
-                                :sprite :G17)))
-    (select-weapon actor 'G17)
 
     (add-object ingame
                 (make-instance 'background

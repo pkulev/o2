@@ -68,11 +68,23 @@
                                               :shape shape)
                                (make-instance 'render-c
                                               :sprite :player
-                                              :render-priority 2))
+                                              :render-priority 2)
+                               (make-instance 'shooter-c
+                                              :bullet-collision-type :player-bullet
+                                              :bullet-collision-category :player
+                                              :weapons (list
+                                                        (make-instance 'G17
+                                                                       :components (list
+                                                                                    (make-instance 'transform-c))
+                                                                       :ammo 32
+                                                                       :current-ammo 17
+                                                                       :sprite :G17))
+                                              :current-weapon 'G17))
                   :systems (list
                             (make-instance 'physical-system)
-                            (make-instance 'render-system))
                             (make-instance 'player-controlable-system)
+                            (make-instance 'render-system)
+                            (make-instance 'shooter-system))
 
                   :sprite sprite
                   :sitting-sprite sitting-sprite)))
@@ -137,7 +149,7 @@
     (not (local-time:timestamp> (local-time:now) (local-time:timestamp+ last-hit-time invinc-seconds :sec)))))
 
 ;; TODO: put the defgeneric for hurt somewhere
-(defmethod hurt ((player james) (ch weapon-charge))
+(defmethod hurt ((player james) (ch weapon-charge-type))
   (with-slots (health last-hit-time invinc-seconds) player
     (if (not (is-invincible player))
         (progn
