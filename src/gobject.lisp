@@ -74,7 +74,8 @@
       (with-accessors ((parent parent)) child-tr
         (unless (find child children)
           (push child children)
-          (setf parent object))))))
+          (setf parent object)))))
+  child)
 
 (defmethod remove-child ((object game-object) (child game-object))
   (let ((tr (find-component object 'transform-c))
