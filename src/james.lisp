@@ -120,7 +120,7 @@
                                 (list
                                  (make-instance 'text-widget-system)))))
 
-    (setf (chipmunk:friction shape) 1d0)
+    (setf (chipmunk:friction shape) 0.5d0)
     (setf (chipmunk:position rigid-body) (chipmunk:make-cp-vect dfloat-x dfloat-y))
 
     player))
