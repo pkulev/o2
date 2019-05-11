@@ -18,7 +18,7 @@
   ((type :initarg :charge-type)
    (collision-type :initarg :collision-type)))
 
-(defun make-charge-object (charge-type collision-type collision-category position)
+(defun make-charge-object (charge-type collision-type shape-filter position)
   (with-accessors ((sprite-name sprite) (mass mass)
                    (velocity starting-velocity))
       charge-type
@@ -31,6 +31,8 @@
 
         (setf (chipmunk:friction shape) 0.5d0)
         (setf (chipmunk:collision-type shape) collision-type)
+        ; (setf (chipmunk:shape-filter shape) shape-filter)
+
         (destructuring-bind (x . y) velocity
           (setf (chipmunk:velocity body) (chipmunk:make-cp-vect x y)))
         (destructuring-bind (x . y) position
@@ -52,7 +54,9 @@
                                       (make-instance 'physical-system)
                                       (make-instance 'render-system))))
                (obj-id (id charge-obj)))
+
           ;; TODO: set collision category to collide with enemies
+
 
           ;; It's a void* pointer, so just make what equals to intptr and store the id there
           (setf (chipmunk:user-data shape) (cffi:make-pointer obj-id))

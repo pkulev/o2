@@ -71,7 +71,8 @@
                                               :render-priority 2)
                                (make-instance 'shooter-c
                                               :bullet-collision-type :player-bullet
-                                              :bullet-collision-category :player
+                                              :bullet-shape-filter (chipmunk:make-shape-filter
+                                                                    '(:player) '(:enemy))
                                               :weapons (list
                                                         (make-instance 'G17
                                                                        :components (list
@@ -90,6 +91,8 @@
                   :sitting-sprite sitting-sprite)))
 
     (setf (chipmunk:collision-type shape) :james)
+    ; (setf (chipmunk:shape-filter shape) (chipmunk:make-shape-filter '(:player) '()))
+
     (chipmunk:with-collision-handler-for (handler (space :james :ground))
       (chipmunk:define-collision-begin-callback player-ground-collision (arbiter space data)
         (declare (ignorable arbiter space data))

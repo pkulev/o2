@@ -29,9 +29,9 @@
    (bullet-collision-type :accessor bullet-collision-type
                           :initarg :bullet-collision-type
                           :documentation "What collision type should be used for callbacks")
-   (bullet-collision-category :accessor bullet-collision-category
-                              :initarg :bullet-collision-category
-                              :documentation "What category should be used for collision checks"))
+   (bullet-shape-filter :accessor bullet-shape-filter
+                        :initarg :bullet-shape-filter
+                        :documentation "What category should be used for collision checks"))
   (:default-initargs :weapons (list)))
 
 (defclass shooter-system (system)
@@ -43,7 +43,7 @@
                      (weaps weapons)
                      (curr-weap current-weapon)
                      (coll-type bullet-collision-type)
-                     (coll-cat bullet-collision-category))
+                     (shp-filter bullet-shape-filter))
         shoot-comp
 
       (when shoot?
@@ -72,7 +72,7 @@
                   (add-object (current-app-state)
                               (make-charge-object (current-charge the-weapon)
                                                   coll-type
-                                                  coll-cat
+                                                  shp-filter
                                                   spawn-pos)))))))))))
 
 ;;(defmethod update ((wp weapon) &key dt &allow-other-keys)
