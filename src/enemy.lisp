@@ -1,36 +1,36 @@
 (in-package :o2)
 
-(defclass enemy-spawner (game-object)
-  ((last-enemy-spawned :initform (local-time:unix-to-timestamp 0))))
+(defclass enemy-spawner-c (component)
+  ((last-enemy-spawned :initarg :last-enemy-spawned
+                       :accessor last-enemy-spawned))
+  (:default-initargs :last-enemy-spawned (local-time:unix-to-timestamp 0)))
 
-(defmethod update :before ((spawner enemy-spawner) &key &allow-other-keys)
-  (with-slots (children last-enemy-spawned) spawner
-    ;; Allow up to 2 enemies alive, spawn them every five seconds if there's less
-    (when (and (< (length children) 2)
-               (local-time:timestamp> (local-time:now)
-                                      (local-time:timestamp+ last-enemy-spawned 5 :sec)))
-      (setf last-enemy-spawned (local-time:now))
+(defclass enemy-spawner-system (system)
+  ((requires :initform '(enemy-spawner-c transform-c))))
 
-      (with-slots (actor camera) (current-app-state)
-        (with-slots ((player-x x)) actor
-          (let* ((player-x-w/-camera (+ player-x (car camera)))
-                 (spawn-x
-                   ;; Randomly (50%) spawn enemy on the left or on the right of the player
-                   (if (> (random 2) 0)
-                       ;; On the right
-                       (+ player-x-w/-camera 1024)
-                       ;; On the left
-                       (- player-x-w/-camera 1024))))
-            (let ((enemy-object (add-object (current-app-state)
-                                            (make-enemy :x spawn-x :y 400
-                                                        :sprite :bad-guy)))
-                  (weapon-object (add-object (current-app-state)
-                                             (make-instance 'G17
-                                                            :ammo 32
-                                                            :current-ammo 17))))
-              (add-child enemy-object weapon-object)
-              (select-weapon enemy-object 'G17)
-              (add-child spawner enemy-object))))))))
+(defmethod run-system ((system enemy-spawner-system) found-components)
+  (destructuring-bind (spawner-comp tr) found-components
+      (with-accessors ((last-spawned last-enemy-spawned)) spawner-comp
+        (with-accessors ((children children)) tr
+          ;; Allow up to 2 enemies alive, spawn them every five seconds if there's less
+          (when (and (< (length children) 2)
+                     (local-time:timestamp> (local-time:now)
+                                            (local-time:timestamp+ last-spawned 5 :sec)))
+            (setf last-spawned (local-time:now))
+
+            (let* ((player (find-with-component (current-app-state) 'player-tag))
+                   (player-x (car (global-position player)))
+                   (spawn-x
+                     ;; Randomly (50%) spawn enemy on the left or on the right of the player
+                     (if (> (random 2) 0)
+                         ;; On the right
+                         (+ player-x 400)
+                         ;; On the left
+                         (- player-x 400))))
+              (add-child
+               (game-object system)
+               (add-object (current-app-state)
+                           (make-enemy (cons spawn-x 400) :bad-guy)))))))))
 
 (defclass enemy (game-object physical)
   ((render-priority :initform 1
@@ -48,17 +48,70 @@
    (pos-direction :initform 1
                   :accessor pos-direction)))
 
-(defun make-enemy (&key x y sprite)
-  (let ((enemy (make-instance 'enemy
-                              :x x :y y
-                              :sprite sprite)))
-    (add-child enemy
-               (make-instance 'text-widget
-                              :x 0 :y 0
-                              :data-getter
-                              #'(lambda ()
-                                  (format nil "~A/~A" (health enemy) (max-health enemy)))))
-    enemy))
+(defun make-enemy (position sprite)
+  (with-slots (space) (current-app-state)
+    (let* ((dfloat-x (coerce (car position) 'double-float))
+           (dfloat-y (coerce (cdr position) 'double-float))
+           (mass 60.0d0)
+           (moment (chipmunk:moment-for-box mass dfloat-x dfloat-y))
+           (rigid-body (chipmunk:add space (chipmunk:make-body
+                                            mass
+                                            moment)))
+           (shape (chipmunk:add space (chipmunk:make-box-shape
+                                       rigid-body
+                                       (coerce (sprite-width :bad-guy) 'double-float)
+                                       (coerce (sprite-height :bad-guy) 'double-float)
+                                       0d0)))
+           (enemy-object (make-instance
+                          'game-object
+                          :components
+                          (list
+                           (make-instance 'physical-c :shape shape :rigid-body rigid-body)
+                           (make-instance 'transform-c)
+                           (make-instance 'render-c :sprite sprite :render-priority 2)
+                           (make-instance 'shooter-c
+                                          :bullet-collision-type :enemy-bullet
+                                          :bullet-shape-filter (chipmunk:make-shape-filter
+                                                                '(:enemy) '(:player))
+                                          :weapons (list
+                                                    (make-instance 'G17
+                                                                   :components (list
+                                                                                (make-instance 'transform-c))
+                                                                   :ammo 32
+                                                                   :current-ammo 17
+                                                                   :sprite :G17))
+                                          :current-weapon 'G17))
+                          :systems
+                          (list
+                           (make-instance 'physical-system)
+                           (make-instance 'render-system)
+                           (make-instance 'shooter-system))))
+           (obj-id (id enemy-object)))
+      (setf (chipmunk:friction shape) 0.5d0)
+      (let ((dfloat-x (coerce (car position) 'double-float))
+            (dfloat-y (coerce (cdr position) 'double-float)))
+        (setf (chipmunk:position rigid-body) (chipmunk:make-cp-vect dfloat-x dfloat-y)))
+
+
+      (setf (chipmunk:collision-type shape) :enemy)
+      (setf (chipmunk:shape-filter shape) (chipmunk:make-shape-filter '(:enemy) '(:ground)))
+      ;; Save the enemy objec ID as user data
+      (setf (chipmunk:user-data shape) (cffi:make-pointer obj-id))
+
+      #|(add-child
+       enemy-object
+       (make-instance 'game-object
+                      :components
+                      (list
+                       (make-instance 'text-widget-c :data-getter
+                                      (lambda ()
+                                        (format nil "~A/~A" (health enemy) (max-health enemy))))
+                       (make-instace 'transform-c))
+                      :systems
+                      (list
+                       (make-instance 'text-widget-system)))|#
+
+      enemy-object)))
 
 
 (defmethod update :before ((en enemy) &key (dt 1) &allow-other-keys)

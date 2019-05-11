@@ -166,14 +166,21 @@
                              (- (car tracked-obj-pos) (floor screen-w 2))
                              (- (cdr tracked-obj-pos) (floor screen-h 2))))))))
 
-(defmethod cleanup ((comp physical-c))
-  (with-accessors ((body rigid-body) (shape shape)) comp
-    (with-slots (space) (current-app-state)
-      (chipmunk:remove space shape)
-      (chipmunk:remove space body))
+;; Component cleanups, which will be done after the physics step
+(defparameter *physical-component-cleanups* '())
 
-    (chipmunk:free-shape shape)
-    (chipmunk:free-body body)))
+(defmethod cleanup ((comp physical-c))
+  ;; Delay cleanup to the time after the physics step
+  (push
+   (lambda ()
+     (with-accessors ((body rigid-body) (shape shape)) comp
+       (with-slots (space) (current-app-state)
+         (chipmunk:remove space body)
+         (chipmunk:remove space shape))
+
+       (chipmunk:free-shape shape)
+       (chipmunk:free-body body)))
+   *physical-component-cleanups*))
 
 (defun local-to-global-position (parent l-position)
   "Translates a local position relatively to the provided parent.

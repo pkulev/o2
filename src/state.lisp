@@ -61,3 +61,6 @@
 (defmethod remove-object ((state state) (object game-object))
   (with-slots (objects) state
     (setf objects (remove object objects))))
+
+(defun find-object-by-id (state id)
+  (find-if (lambda (o) (= id (id o))) (objects state)))

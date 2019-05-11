@@ -45,17 +45,17 @@
                    :accessor invinc-second)))
 
 (defun make-james (&key (position (cons 0 0)) sprite sitting-sprite space)
-  (let* ((dfloat-x (coerce (car position) 'double-float))
-         (dfloat-y (coerce (cdr position) 'double-float))
+  (let* ((dfloat-width (coerce (sprite-width :player) 'double-float))
+         (dfloat-height (coerce (sprite-height :player) 'double-float))
          (mass 60.0d0)
-         (moment (chipmunk:moment-for-box mass dfloat-x dfloat-y))
+         (moment (chipmunk:moment-for-box mass dfloat-width dfloat-height))
          (rigid-body (chipmunk:add space (chipmunk:make-body
                                           mass
                                           moment)))
          (shape (chipmunk:add space (chipmunk:make-box-shape
                                      rigid-body
-                                     (coerce (sprite-width :player) 'double-float)
-                                     (coerce (sprite-height :player) 'double-float)
+                                     dfloat-width
+                                     dfloat-height
                                      0d0)))
          (player (make-instance
                   'james
@@ -91,7 +91,7 @@
                   :sitting-sprite sitting-sprite)))
 
     (setf (chipmunk:collision-type shape) :james)
-    ; (setf (chipmunk:shape-filter shape) (chipmunk:make-shape-filter '(:player) '()))
+    (setf (chipmunk:shape-filter shape) (chipmunk:make-shape-filter '(:player) '(:ground)))
 
     (chipmunk:with-collision-handler-for (handler (space :james :ground))
       (chipmunk:define-collision-begin-callback player-ground-collision (arbiter space data)
@@ -124,8 +124,9 @@
                                  (make-instance 'text-widget-system)))))
 
     (setf (chipmunk:friction shape) 0.5d0)
-    (setf (chipmunk:position rigid-body) (chipmunk:make-cp-vect dfloat-x dfloat-y))
-
+    (let ((dfloat-x (coerce (car position) 'double-float))
+          (dfloat-y (coerce (cdr position) 'double-float)))
+      (setf (chipmunk:position rigid-body) (chipmunk:make-cp-vect dfloat-x dfloat-y)))
     player))
 
 (defmethod select-weapon ((player james) weapon-class-name)

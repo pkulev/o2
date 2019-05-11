@@ -68,7 +68,8 @@
                 ;; FIXME: directions
                 (let* ((pos (position tr))
                        ;; FIXME: actually have some configurable place to put those bullets
-                      (spawn-pos (cons (+ 256 (car pos)) (cdr pos))))
+                       (spawn-pos (cons (+ 150 (car pos)) (cdr pos))))
+
                   (add-object (current-app-state)
                               (make-charge-object (current-charge the-weapon)
                                                   coll-type

@@ -124,14 +124,28 @@
                 (:quit ()
                        (sdl2-ttf:close-font (get-font :ubuntu))
 
-                       ;; Clean uo states on shutdown
+                       ;; Clean up states on shutdown
                        (loop for state being the hash-values of (states *application*)
                              do (cleanup state))
+                       (when (not (null *physical-component-cleanups*))
+                         ;; Run physics components cleanups
+                         (dolist (cleanup *physical-component-cleanups*)
+                           (funcall cleanup))
+                         (setf *physical-component-cleanups* '()))
+
+                       ;; FIXME: this is UGLY, figure out a way to cleanup all the physics and THEN
+                       ;; the space. Maybe some kind of cleanup queue for all objects, that runs all
+                       ;; cleanups at the end of the step, so that the program arives here,
+                       ;; there would be nothing tat depends on the physics space
+                       (let ((ingame-state (gethash :ingame (states *application*))))
+                         (when ingame-state
+                           (with-slots (space) ingame-state
+                               (chipmunk:free-space space))))
 
                        (setf *application* nil)
 
                        (sdl2-image:quit)
 
-                       ;; FIXME: Exiting breaks stuff because finalizers expect to to not exit
+                       ;; FIXME: Exiting breaks stuff because finalizers expect it to not exit
                        ; (sdl2-ttf:quit)
                        t)))))))))
