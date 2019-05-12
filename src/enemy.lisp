@@ -80,12 +80,14 @@
                                                                    :ammo 32
                                                                    :current-ammo 17
                                                                    :sprite :G17))
-                                          :current-weapon 'G17))
+                                          :current-weapon 'G17)
+                           (make-instance 'health-c))
                           :systems
                           (list
                            (make-instance 'physical-system)
                            (make-instance 'render-system)
-                           (make-instance 'shooter-system))))
+                           (make-instance 'shooter-system)
+                           (make-instance 'health-system))))
            (obj-id (id enemy-object)))
       (setf (chipmunk:friction shape) 0.5d0)
       (let ((dfloat-x (coerce (car position) 'double-float))
@@ -98,18 +100,23 @@
       ;; Save the enemy objec ID as user data
       (setf (chipmunk:user-data shape) (cffi:make-pointer obj-id))
 
-      #|(add-child
+      (add-child
        enemy-object
-       (make-instance 'game-object
-                      :components
-                      (list
-                       (make-instance 'text-widget-c :data-getter
-                                      (lambda ()
-                                        (format nil "~A/~A" (health enemy) (max-health enemy))))
-                       (make-instace 'transform-c))
-                      :systems
-                      (list
-                       (make-instance 'text-widget-system)))|#
+       (add-object
+        (current-app-state)
+        (make-instance 'game-object
+                       :components
+                       (list
+                        (make-instance 'transform-c)
+                        (make-instance 'render-c :render-priority 2)
+                        (make-instance 'text-widget-c
+                                       :data-getter
+                                       (lambda ()
+                                         (let ((health-c (find-component enemy-object 'health-c)))
+                                           (format nil "~A/~A" (health health-c) (max-health health-c))))))
+                       :systems
+                       (list
+                        (make-instance 'text-widget-system)))))
 
       enemy-object)))
 

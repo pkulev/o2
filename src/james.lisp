@@ -61,6 +61,7 @@
                   'james
                   :components (list
                                (make-instance 'player-tag)
+                               (make-instance 'health-c)
                                (make-instance 'player-controlable-c)
                                (make-instance 'transform-c :position position)
                                (make-instance 'physical-c
@@ -82,6 +83,7 @@
                                                                        :sprite :G17))
                                               :current-weapon 'G17))
                   :systems (list
+                            (make-instance 'health-system)
                             (make-instance 'physical-system)
                             (make-instance 'player-controlable-system)
                             (make-instance 'render-system)
@@ -115,10 +117,11 @@
                                                 :data-getter
                                                 (lambda ()
                                                   (with-accessors ((player actor)) (current-app-state)
-                                                    (format nil "~A/~A ~A"
-                                                            (health player)
-                                                            (max-health player)
-                                                            (if (is-invincible player) "[I]" ""))))))
+                                                    (let ((health-c (find-component player 'health-c)))
+                                                      (format nil "~A/~A ~A"
+                                                            (health health-c)
+                                                            (max-health health-c)
+                                                            (if (is-invincible player) "[I]" "")))))))
                                 :systems
                                 (list
                                  (make-instance 'text-widget-system)))))

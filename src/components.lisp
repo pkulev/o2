@@ -40,6 +40,13 @@
   (:default-initargs :max-move-speed 200d0
                      :jumping-added-velocity -200d0))
 
+(defclass health-c (component)
+  ((max-health :initarg :max-health
+               :accessor max-health)
+   (health :initarg :health
+           :accessor health))
+  (:default-initargs :health 100 :max-health 100))
+
 (defclass player-tag (component) ())
 (defclass camera-tag (component) ())
 
@@ -59,6 +66,9 @@
 
 (defclass camera-system (system)
   ((requires :initform '(transform-c))))
+
+(defclass health-system (system)
+  ((requires :initform '(health-c))))
 
 (defun find-component (game-object component-name &key (raise-error t))
   "Tries to find the component in the game-object, and if it could not be found,
@@ -165,6 +175,13 @@
         (setf (position tr) (cons
                              (- (car tracked-obj-pos) (floor screen-w 2))
                              (- (cdr tracked-obj-pos) (floor screen-h 2))))))))
+
+(defmethod run-system ((system health-system) found-components)
+  (destructuring-bind (h-comp) found-components
+    (with-accessors ((obj game-object)) system
+      (with-accessors ((health health)) h-comp
+        (when (<= health 0)
+          (destroy obj))))))
 
 ;; Component cleanups, which will be done after the physics step
 (defparameter *physical-component-cleanups* '())

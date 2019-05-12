@@ -15,7 +15,8 @@
                      :mass 0.1d0))
 
 (defclass weapon-charge-c (component)
-  ((type :initarg :charge-type)
+  ((charge-type :initarg :charge-type
+                :reader charge-type)
    (collision-type :initarg :collision-type)))
 
 (defun make-charge-object (charge-type collision-type shape-filter position)

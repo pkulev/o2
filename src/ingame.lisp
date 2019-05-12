@@ -19,7 +19,7 @@
 
     ;; FIXME: a better place for this?
     (let ((ground (chipmunk:make-segment-shape (chipmunk:body space)
-                                               (chipmunk:make-cp-vect 0d0 550d0)
+                                               (chipmunk:make-cp-vect -1280d0 550d0)
                                                (chipmunk:make-cp-vect 1280d0 550d0)
                                                0d0)))
       (setf (chipmunk:collision-type ground) :ground)
@@ -118,10 +118,17 @@
                  (enemy-id (cffi:pointer-address (autowrap:ptr (chipmunk:user-data enemy-shape))))
                  (enemy-obj (find-object-by-id (current-app-state) enemy-id)))
             (when bullet-obj
-              (destroy bullet-obj))
-            ;(destroy bullet-obj)
-            ;(destroy enemy-obj)
-            ))
+              (destroy bullet-obj)
+
+              (when enemy-obj
+                (let* ((health-c (find-component enemy-obj 'health-c))
+                       (damage-range
+                         (damage-range
+                          (charge-type
+                           (find-component bullet-obj 'weapon-charge-c))))
+                       (damage (+ (car damage-range) (random (cdr damage-range)))))
+                  (with-accessors ((health health)) health-c
+                    (setf health (- health damage))))))))
 
         1)
     (setf (chipmunk:begin-collision-fun handler) 'player-bullet/enemy-collision)))
