@@ -92,7 +92,7 @@
   ((current-charge :initform *9x19*)))
 
 (defclass MP5SD (weapon)
-  ((current-charge :initform (find-class '9x19))))
+  ((current-charge :initform *9x19*)))
 
 (defclass AKM (weapon)
   ((current-charge :initform (find-class '7.62x39))))

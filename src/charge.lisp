@@ -106,11 +106,6 @@
                  :starting-velocity '(1000d0 . 0d0)
                  :sprite :9x19))
 
-(defclass 9x19 (weapon-charge-type) ()
-  (:default-initargs :damage-range '(25 . 35)
-                     :starting-velocity '(35 . 0)
-                     :sprite :9x19))
-
 (defclass 5.56x45 (weapon-charge-type)
   ((damage-range :initform (cons 35 40))))
 
