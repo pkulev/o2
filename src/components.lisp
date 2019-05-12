@@ -56,7 +56,7 @@
    (game-object :reader game-object)))
 
 (defclass physical-system (system)
-  ((requires :initform '(transform-c physical-c))))
+  ((requires :initform '(transform-c physical-c render-c))))
 
 (defclass player-controlable-system (system)
   ((requires :initform '(player-controlable-c physical-c render-c shooter-c))))
@@ -110,17 +110,21 @@
 
 (defmethod run-system ((system physical-system) found-components)
   "Update the position of the object from the physical system"
-  (destructuring-bind (transform physical) found-components
+  (destructuring-bind (transform physical render) found-components
     (with-accessors ((body rigid-body)) physical
       (with-accessors ((pos position) (parent parent)) transform
-        (let ((phys-pos (chipmunk:position body)))
-          (setf pos
-                ;; Translate the global position from the physics system into a local position,
-                ;; if there is a parent.
-                (global-to-local-position
-                 parent
-                 (cons (round (chipmunk:x phys-pos))
-                       (round (chipmunk:y phys-pos))))))))))
+        (with-accessors ((sprite sprite)) render
+          (let ((phys-pos (chipmunk:position body)))
+            (setf pos
+                  ;; Translate the global position from the physics system into a local position,
+                  ;; if there is a parent.
+                  (global-to-local-position
+                   parent
+                   (cons (- (round (chipmunk:x phys-pos))
+                            (floor (sprite-width sprite) 2))
+                         ;; FIXME: Y should actually be +ed with half of the sprite's height,
+                         ;;        but it doesn't look quiet right
+                         (round (chipmunk:y phys-pos)))))))))))
 
 (defmethod run-system ((system player-controlable-system) found-components)
   (destructuring-bind (player-controlable-comp physical render-comp shooter-comp) found-components
