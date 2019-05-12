@@ -73,7 +73,7 @@
                                (make-instance 'shooter-c
                                               :bullet-collision-type :player-bullet
                                               :bullet-shape-filter (chipmunk:make-shape-filter
-                                                                    '(:player) '(:enemy))
+                                                                    '(:player-bullet) '(:enemy :ground))
                                               :weapons (list
                                                         (make-instance 'G17
                                                                        :components (list

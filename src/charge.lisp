@@ -19,7 +19,7 @@
                 :reader charge-type)
    (collision-type :initarg :collision-type)))
 
-(defun make-charge-object (charge-type collision-type shape-filter position)
+(defun make-charge-object (charge-type collision-type shape-filter position flip)
   (with-accessors ((sprite-name sprite) (mass mass)
                    (velocity starting-velocity))
       charge-type
@@ -32,10 +32,13 @@
 
         (setf (chipmunk:friction shape) 0.5d0)
         (setf (chipmunk:collision-type shape) collision-type)
-        ; (setf (chipmunk:shape-filter shape) shape-filter)
+        (setf (chipmunk:shape-filter shape) shape-filter)
 
         (destructuring-bind (x . y) velocity
-          (setf (chipmunk:velocity body) (chipmunk:make-cp-vect x y)))
+          (setf (chipmunk:velocity body) (chipmunk:make-cp-vect (ecase flip
+                                                                  (:none x)
+                                                                  (:horizontal (- x)))
+                                                                y)))
         (destructuring-bind (x . y) position
           (setf (chipmunk:position body) (chipmunk:make-cp-vect
                                           (coerce x 'double-float)
@@ -100,7 +103,7 @@
 (defparameter *9x19*
   (make-instance 'weapon-charge-type
                  :damage-range '(25 . 35)
-                 :starting-velocity '(100d0 . 0d0)
+                 :starting-velocity '(1000d0 . 0d0)
                  :sprite :9x19))
 
 (defclass 9x19 (weapon-charge-type) ()

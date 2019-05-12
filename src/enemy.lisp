@@ -96,7 +96,7 @@
 
 
       (setf (chipmunk:collision-type shape) :enemy)
-      (setf (chipmunk:shape-filter shape) (chipmunk:make-shape-filter '(:enemy) '(:ground)))
+      (setf (chipmunk:shape-filter shape) (chipmunk:make-shape-filter '(:enemy) '(:ground :player-bullet)))
       ;; Save the enemy objec ID as user data
       (setf (chipmunk:user-data shape) (cffi:make-pointer obj-id))
 

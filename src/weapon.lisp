@@ -35,10 +35,10 @@
   (:default-initargs :weapons (list)))
 
 (defclass shooter-system (system)
-  ((requires :initform '(shooter-c transform-c))))
+  ((requires :initform '(shooter-c transform-c render-c))))
 
 (defmethod run-system ((system shooter-system) found-components)
-  (destructuring-bind (shoot-comp tr) found-components
+  (destructuring-bind (shoot-comp tr render-c) found-components
     (with-accessors ((shoot? shoot?)
                      (weaps weapons)
                      (curr-weap current-weapon)
@@ -65,16 +65,21 @@
               (setf last-shot (local-time:now))
 
               (with-accessors ((par parent)) tr
-                ;; FIXME: directions
-                (let* ((pos (position tr))
-                       ;; FIXME: actually have some configurable place to put those bullets
-                       (spawn-pos (cons (+ 150 (car pos)) (cdr pos))))
+                (with-accessors ((flip flip) (sprite sprite)) render-c
+                  (let* ((pos (position tr))
+                         (spawn-pos
+                           (cons
+                            (ecase flip
+                              (:none (+ (sprite-width sprite) (car pos)))
+                              (:horizontal (car pos)))
+                            (cdr pos))))
 
-                  (add-object (current-app-state)
-                              (make-charge-object (current-charge the-weapon)
-                                                  coll-type
-                                                  shp-filter
-                                                  spawn-pos)))))))))))
+                    (add-object (current-app-state)
+                                (make-charge-object (current-charge the-weapon)
+                                                    coll-type
+                                                    shp-filter
+                                                    spawn-pos
+                                                    flip))))))))))))
 
 ;;(defmethod update ((wp weapon) &key dt &allow-other-keys)
 ;;  (format t "updating weapon ~a~&" wp)

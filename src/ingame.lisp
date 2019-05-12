@@ -103,6 +103,7 @@
   (chipmunk:clear-shape-filter-categories)
   ;; Things that should not collide the player (incl. bullets)
   (chipmunk:register-shape-filter-category :player)
+  (chipmunk:register-shape-filter-category :player-bullet)
   ;; Things that should not collide the enemy, and the player bullets should
   (chipmunk:register-shape-filter-category :enemy)
   ;; The ground, both players and enemies should collide with it
