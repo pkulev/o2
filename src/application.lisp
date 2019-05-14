@@ -39,28 +39,30 @@
   (with-slots ((states states)
                (ren renderer)
                current-state) app
-    ;; FIXME: This disallows swapping registered state,
-    ;; but it's kinda needed for now
-    ;; (if (gethash state-name states)
-    ;;     (error "State ~a already registered" state-name))
+    (if (gethash state-name states)
+        (error "State ~a already registered" state-name))
+
     (let ((state (make-instance state-class
                                 :application app
                                 :name state-name
                                 :renderer ren)))
+      (init state)
       (unless current-state (setf current-state state))
       (setf (gethash state-name states) state))))
 
-(defun set-state (app state-name &key no-reinit)
-  (with-slots ((states states)
-               current-state) app
-    (let ((state (gethash state-name states)))
-      (unless state (error "State ~a is not registered." state-name))
-      (setf current-state state)
-      (unless no-reinit (init state)))))
+(defun init-state (app &optional state-name)
+  "Initialize state STATE-NAME if provided, current state otherwise."
+  (let ((state (if state-name (get-state app state-name) (current-state app))))
+    (init state)))
+
+(defun set-state (app state-name)
+  "Set state STATE-NAME as current for APP."
+  (let ((state (get-state app state-name)))
+    (setf (slot-value app 'current-state) state)))
 
 (defun get-state (app state-name)
   (or (gethash state-name (states app) nil)
-      (error "No state with name ~S" state-name)))
+      (error "State ~a is not registered." state-name)))
 
 (defmacro continuable (&body body)
   "A macro to disable livesupport when in SLIME"
