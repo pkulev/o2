@@ -124,9 +124,6 @@
                          (when (< current-speed +delay+)
                            (sdl2:delay (round (- +delay+ current-speed))))))
                 (:quit ()
-                       (sdl2-ttf:close-font (get-font :ubuntu))
-                       (sdl2-ttf:close-font (get-font :ubuntu-large))
-
                        ;; Clean up states on shutdown
                        (loop for state being the hash-values of (states *application*)
                              do (cleanup state))
@@ -148,7 +145,5 @@
                        (setf *application* nil)
 
                        (sdl2-image:quit)
-
-                       ;; FIXME: Exiting breaks stuff because finalizers expect it to not exit
-                       ; (sdl2-ttf:quit)
+                       (sdl2-ttf:quit)
                        t)))))))))
