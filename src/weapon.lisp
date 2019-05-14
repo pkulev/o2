@@ -1,7 +1,10 @@
 (in-package :o2)
 
 (defclass weapon (game-object)
-  ((current-ammo :initform 0
+  ;; FIXME: Move the sprite to a component
+  ((sprite :initform nil
+           :initarg :sprite)
+   (current-ammo :initform 0
                  :initarg :current-ammo
                  :accessor current-ammo)
    (ammo :initform 0
@@ -80,13 +83,6 @@
                                                     shp-filter
                                                     spawn-pos
                                                     flip))))))))))))
-
-;;(defmethod update ((wp weapon) &key dt &allow-other-keys)
-;;  (format t "updating weapon ~a~&" wp)
-
-;;(defmethod render ((wp weapon))
-;;  (with-slots (sprite) wp
-;;    (format t "rendering weapon ~a~&" wp)
 
 (defclass G17 (weapon)
   ((current-charge :initform *9x19*)))

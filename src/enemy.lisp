@@ -140,13 +140,6 @@
                 (setf pos-direction x-move-direction)
                 (setf x-accel 1))))))))
 
-(defmethod render ((en enemy))
-  (with-slots (camera) (current-app-state)
-    (with-slots (x y sprite children pos-direction) en
-      (let ((flip (if (= pos-direction -1) :none :horizontal)))
-        (when sprite (draw-sprite sprite (- x (car camera)) (- y (cdr camera)) :flip flip)
-              (dolist (child children) (render child)))))))
-
 (defmethod hurt ((en enemy) (ch weapon-charge-type))
   (with-slots (health) en
     (with-slots (damage-range) ch

@@ -18,44 +18,13 @@
                :reader components)
    (systems :initform (list)
             :initarg :systems
-            :reader systems)
-
-   (render-priority :initform 0
-                    :accessor render-priority
-                    :allocation :class)
-   (sprite :initform nil
-           :initarg :sprite
-           :reader sprite)
-
-   (parent :initform nil
-           :reader parent)
-
-   (children :initform (list)
-             :reader children)))
+            :reader systems)))
 
 (defmethod initialize-instance :after ((obj game-object) &key)
   ;; Set all the "game-object" slots to this object
   (dolist (system (systems obj))
     (with-slots (game-object) system
       (setf game-object obj))))
-
-(defgeneric update (object &key &allow-other-keys)
-  (:documentation "Update game object state."))
-
-(defmethod update ((object game-object) &key dt &allow-other-keys)
-  (declare (ignorable dt))
-
-  (run-systems object)
-
-  (with-slots (children) object
-    (dolist (child children)
-      (update child))))
-
-(defmethod render ((object game-object))
-  (with-slots (x y sprite children) object
-    (with-slots (camera) (current-app-state)
-      (when sprite (draw-sprite sprite (- x (car camera)) (- y (cdr camera)))))
-    (dolist (child children) (render child))))
 
 (defmethod get-rect ((object game-object))
   (with-slots (x y sprite) object

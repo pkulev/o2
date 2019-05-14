@@ -69,13 +69,16 @@
 (defun sprite-height (sprite-name)
   (sdl2:texture-height (get-sprite-texture sprite-name)))
 
-(defun draw-rect (x y w h r g b a &key (blendmode :blend) (fill t))
-  (with-slots (sdl2-renderer) *renderer*
-    (sdl2:set-render-draw-blend-mode sdl2-renderer blendmode)
-    (sdl2:set-render-draw-color sdl2-renderer r g b a)
-    (if fill
-        (sdl2:render-fill-rect sdl2-renderer (sdl2:make-rect x y w h))
-        (sdl2:render-draw-rect sdl2-renderer (sdl2:make-rect x y w h)))))
+(defun draw-rect (position dimensions rgba-color &key (blendmode :blend) (fill t))
+  (destructuring-bind (x . y) position
+    (destructuring-bind (w . h) dimensions
+      (destructuring-bind (r g b a) rgba-color
+        (with-slots (sdl2-renderer) *renderer*
+          (sdl2:set-render-draw-blend-mode sdl2-renderer blendmode)
+          (sdl2:set-render-draw-color sdl2-renderer r g b a)
+          (if fill
+              (sdl2:render-fill-rect sdl2-renderer (sdl2:make-rect x y w h))
+              (sdl2:render-draw-rect sdl2-renderer (sdl2:make-rect x y w h))))))))
 
 (defun draw-sprite (sprite-name x y &key (blendmode :blend) (scale 1.0) flip)
   (let* ((texture (get-sprite-texture sprite-name))

@@ -71,6 +71,14 @@
   #-slynk
   `(progn ,@body))
 
+(defparameter *after-step-callbacks* '())
+(defun add-after-step-callback (callback)
+  (push callback *after-step-callbacks*))
+(defun run-after-step-callbacks ()
+  (dolist (c *after-step-callbacks*)
+    (funcall c))
+  (setf *after-step-callbacks* '()))
+
 (defmethod start ((app application))
   (sdl2-image:init '(:png))
   (sdl2-ttf:init)
@@ -104,10 +112,6 @@
           (with-slots ((state current-state)) app
             (continuable
               (sdl2:with-event-loop (:method :poll)
-                (:keydown (:keysym keysym)
-                          (process-input state :keydown keysym))
-                (:keyup (:keysym keysym)
-                        (process-input state :keyup keysym))
                 (:idle ()
                        (setf current-frame (sdl2:get-ticks))
                        ;; TODO move out to :before and :after render
@@ -116,8 +120,15 @@
                        (livesupport:update-repl-link)
 
                        (sdl2:render-clear ren)
+
+                       ;; FIXME: this is only called to make a physic world step in ingame,
+                       ;;        do something proper here
                        (update state)
-                       (render state)
+                       (with-accessors ((objects objects)) state
+                           (dolist (object objects)
+                             (run-systems object)))
+                       (run-after-step-callbacks)
+
                        (sdl2:render-present ren)
                        (let ((current-speed (- (sdl2:get-ticks)
                                                current-frame)))

@@ -26,6 +26,8 @@
 (defgeneric render (state))
 (defgeneric add-object (state object))
 
+(defmethod update (state &key &allow-other-keys))
+
 (defmethod init ((state state)))
 
 (defgeneric cleanup (what))
@@ -36,12 +38,6 @@
     (dolist (object objects)
       (with-accessors ((comps components)) object
         (dolist (comp comps) (cleanup comp))))))
-
-(defmethod update ((state state) &key dt &allow-other-keys)
-  (with-slots (running objects) state
-    (when running
-      (dolist (object objects)
-        (update object)))))
 
 (defmethod add-object ((state state) (object game-object))
   (with-slots (objects) state
