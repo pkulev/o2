@@ -160,9 +160,7 @@
                   ;; Restart the game
                   ;; FIXME: this is kinda ugly
                   (progn
-                    (deregister-state *application* :ingame)
-                    (register-state *application* 'ingame-state :ingame)
-                    (set-state *application* :ingame)))))))))
+                    (init-state *application*)))))))))
 
 (defmethod update ((player james) &key (dt 1) &allow-other-keys)
   (declare (ignorable dt))
