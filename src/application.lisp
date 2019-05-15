@@ -36,24 +36,35 @@
       (setf (gethash state-name states) nil))))
 
 (defun register-state (app state-class state-name)
-  (with-slots ((states states)
-               (ren renderer)
-               current-state) app
+  (with-slots ((ren renderer) states current-state) app
     (if (gethash state-name states)
         (error "State ~a already registered" state-name))
 
     (let ((state (make-instance state-class
                                 :application app
                                 :name state-name
-                                :renderer ren)))
+                                :renderer ren))
+          (previous-state current-state))
+
+      (setf (gethash state-name states) state)
+      ;; NOTE: Accessing current state on `init'.
+      ;; game objects in state's `init' method can access it's state via
+      ;; `current-app-state'. To provide this we must set state we are
+      ;; registering as current.
+      (set-state app state-name)
+
       (init state)
-      (unless current-state (setf current-state state))
-      (setf (gethash state-name states) state))))
+
+      (when previous-state (setf current-state previous-state)))))
 
 (defun init-state (app &optional state-name)
   "Initialize state STATE-NAME if provided, current state otherwise."
-  (let ((state (if state-name (get-state app state-name) (current-state app))))
-    (init state)))
+  (let ((state (if state-name (get-state app state-name) (current-state app)))
+        (previous-state current-state))
+    ;; NOTE: Temporarily set state as current to call `init' properly.
+    (setf (slot-value app 'current-state) state)
+    (init state)
+    (setf (slot-value app 'current-state) previous-state)))
 
 (defun set-state (app state-name)
   "Set state STATE-NAME as current for APP."
