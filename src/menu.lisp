@@ -97,13 +97,13 @@
                    (make-instance 'transform-c :position '(150 . 100)))
                   :systems (list
                             (make-instance 'render-system))))
-  
+
   (let* ((menu-object
            (add-object
             menu
             (make-instance 'game-object
                            :components
-                           (list                            
+                           (list
                             (make-instance 'transform-c))
                            :systems
                            (list
@@ -154,7 +154,6 @@
                                    :dimensions (cons button-w button-h)
                                    :choice-number 1
                                    :text "Exit"
-                                   :action (lambda ()
-                                               (sdl2:push-event :quit))))
+                                   :action (lambda () (push-event :restart-current-state))))
        :systems (list
                  (make-instance 'menu-choice-system)))))))

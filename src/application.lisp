@@ -87,6 +87,12 @@
     (funcall c))
   (setf *after-step-callbacks* '()))
 
+(defun add-event-type (type)
+  (sdl2:register-user-event-type type))
+
+(defun push-event (event)
+  (sdl2:push-event event))
+
 (defmethod start ((app application))
   (sdl2-image:init '(:png))
   (sdl2-ttf:init)
@@ -101,8 +107,9 @@
           (set-current-renderer renderer)
           (setf (slot-value app 'renderer) renderer)
 
-          (add-sprite :logo (res/gfx "logo.png"))
+          (add-event-type :restart-current-state)
 
+          (add-sprite :logo (res/gfx "logo.png"))
           (add-sprite :background (res/gfx "background-placeholder.png"))
           (add-sprite :player (res/gfx "player-pistol-firing.png"))
           (add-sprite :player-sitting (res/gfx "player-sit-pistol-firing.png"))
@@ -120,6 +127,8 @@
           (with-slots ((state current-state)) app
             (continuable
               (sdl2:with-event-loop (:method :poll)
+                (:restart-current-state ()
+                                        (init-state app))
                 (:idle ()
                        (setf current-frame (sdl2:get-ticks))
                        ;; TODO move out to :before and :after render

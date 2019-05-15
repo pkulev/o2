@@ -155,4 +155,4 @@
               (if (<= health 0)
                   ;; Restart the game
                   ;; FIXME: this is kinda ugly
-                  (init-state *application*))))))))
+                  (push-event :restart-current-state))))))))
