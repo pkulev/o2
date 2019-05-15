@@ -57,7 +57,7 @@
 (defun init-state (app &optional state-name)
   "Initialize state STATE-NAME if provided, current state otherwise."
   (let ((state (if state-name (get-state app state-name) (current-state app)))
-        (previous-state current-state))
+        (previous-state (current-state app)))
     ;; NOTE: Temporarily set state as current to call `init' properly.
     (setf (slot-value app 'current-state) state)
     (init state)
