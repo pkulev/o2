@@ -1,12 +1,8 @@
 (in-package :o2)
 
 (defclass state ()
-  ((name :initform (error "Name must be set") ;; TODO drop
-         :initarg :name)
-   (application :initform (error "Application must be set")
+  ((application :initform (error "Application must be set.")
                 :initarg :application)
-   (renderer :initform (error "Renderer must be set")
-             :initarg :renderer)
    (running :initform nil
             :accessor running?)
    (actor :initform nil

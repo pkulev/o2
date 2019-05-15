@@ -40,10 +40,7 @@
     (if (gethash state states)
         (error "State ~a is already registered." state))
 
-    (let* ((state-object (make-instance state
-                                        :application app
-                                        :name state
-                                        :renderer ren))
+    (let* ((state-object (make-instance state :application app))
            (previous-state current-state))
 
       (setf (gethash state states) state-object)
