@@ -35,25 +35,25 @@
     (when (gethash state-name states)
       (setf (gethash state-name states) nil))))
 
-(defun register-state (app state-class state-name)
+(defun register-state (app state)
   (with-slots ((ren renderer) states current-state) app
-    (if (gethash state-name states)
-        (error "State ~a already registered" state-name))
+    (if (gethash state states)
+        (error "State ~a is already registered." state))
 
-    (let ((state (make-instance state-class
-                                :application app
-                                :name state-name
-                                :renderer ren))
-          (previous-state current-state))
+    (let* ((state-object (make-instance state
+                                        :application app
+                                        :name state
+                                        :renderer ren))
+           (previous-state current-state))
 
-      (setf (gethash state-name states) state)
+      (setf (gethash state states) state-object)
       ;; NOTE: Accessing current state on `init'.
       ;; game objects in state's `init' method can access it's state via
       ;; `current-app-state'. To provide this we must set state we are
       ;; registering as current.
-      (set-state app state-name)
+      (set-state app state)
 
-      (init state)
+      (init state-object)
 
       (when previous-state (setf current-state previous-state)))))
 
@@ -116,9 +116,9 @@
           (add-font :ubuntu (res/fonts "Ubuntu-R.ttf") :font-size 16)
           (add-font :ubuntu-large (res/fonts "Ubuntu-R.ttf") :font-size 36)
 
-          (register-state app 'main-menu-state :main-menu)
-          (register-state app 'ingame-state :ingame)
-          (set-state app :main-menu)
+          (register-state app 'main-menu-state)
+          (register-state app 'ingame-state)
+          (set-state app 'main-menu-state)
 
           (with-slots ((state current-state)) app
             (continuable

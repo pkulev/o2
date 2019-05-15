@@ -133,7 +133,7 @@
                                         :action (lambda ()
                                                   (add-after-step-callback
                                                    (lambda ()
-                                                     (set-state *application* :ingame))))))
+                                                     (set-state *application* 'ingame-state))))))
             :systems (list
                       (make-instance 'menu-choice-system)))))
     (add-child
