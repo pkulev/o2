@@ -131,9 +131,7 @@
                                         :choice-number 0
                                         :text "New game"
                                         :action (lambda ()
-                                                  (add-after-step-callback
-                                                   (lambda ()
-                                                     (set-state *application* 'ingame-state))))))
+                                                  (push-event :change-current-state 'ingame-state))))
             :systems (list
                       (make-instance 'menu-choice-system)))))
     (add-child

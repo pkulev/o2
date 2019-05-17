@@ -79,19 +79,12 @@
   #-slynk
   `(progn ,@body))
 
-(defparameter *after-step-callbacks* '())
-(defun add-after-step-callback (callback)
-  (push callback *after-step-callbacks*))
-(defun run-after-step-callbacks ()
-  (dolist (c *after-step-callbacks*)
-    (funcall c))
-  (setf *after-step-callbacks* '()))
 
 (defun add-event-type (type)
   (sdl2:register-user-event-type type))
 
-(defun push-event (event)
-  (sdl2:push-event event))
+(defun push-event (event &optional user-data)
+  (sdl2:push-user-event event user-data))
 
 (defmethod start ((app application))
   (sdl2-image:init '(:png))
@@ -108,6 +101,7 @@
           (setf (slot-value app 'renderer) renderer)
 
           (add-event-type :restart-current-state)
+          (add-event-type :change-current-state)
 
           (add-sprite :logo (res/gfx "logo.png"))
           (add-sprite :background (res/gfx "background-placeholder.png"))
@@ -129,6 +123,8 @@
               (sdl2:with-event-loop (:method :poll)
                 (:restart-current-state ()
                                         (init-state app))
+                (:change-current-state (:user-data state-name)
+                 (set-state *application* state-name))
                 (:idle ()
                        (setf current-frame (sdl2:get-ticks))
                        ;; TODO move out to :before and :after render
@@ -144,7 +140,6 @@
                        (with-accessors ((objects objects)) state
                            (dolist (object objects)
                              (run-systems object)))
-                       (run-after-step-callbacks)
 
                        (sdl2:render-present ren)
                        (let ((current-speed (- (sdl2:get-ticks)
