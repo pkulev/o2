@@ -32,21 +32,36 @@
                (add-object (current-app-state)
                            (make-enemy (cons spawn-x 400) :bad-guy)))))))))
 
-(defclass enemy (game-object physical)
-  ((render-priority :initform 1
-                    :allocation :class)
-   (health :initform 100
-           :reader health)
-   (max-health :initform 100
-               :reader max-health)
-   (armor :initform 0
-          :reader armor)
-   (weapon :initform nil)
+(defclass enemy-system (system)
+  ((requires :initform '(transform-c physical-c shooter-c render-c))))
 
-   (x-max-velocity :initform 5)
+(defmethod run-system ((system enemy-system) found-components)
+  (destructuring-bind (tr phys shooter rend) found-components
+    (with-slots (actor) (current-app-state)
+      (with-accessors ((pos position)) tr
+        ;; Get the global position from the enemy transform
+        ;; and the player position from the actor (that has a transform)
+        (let* ((enemy-x (car (global-position tr)))
+               (player-x (car (global-position actor)))
+               (player-distance (abs (- player-x enemy-x))))
+          (with-accessors ((body rigid-body)) phys
+            (let ((vel (chipmunk:velocity body)))
+              (with-accessors ((flip flip)) rend
+                (let ((expected-flip (if (> player-x enemy-x) :none :horizontal)))
+                  (if (and (< player-distance 300) (equal flip expected-flip))
+                      ;; If the enemy is near the player, stop and shoot
+                      (progn
+                        (setf (chipmunk:x vel) 0d0)
 
-   (pos-direction :initform 1
-                  :accessor pos-direction)))
+                        (with-accessors ((shoot? shoot?)) shooter
+                          (setf shoot? t)))
+                      ;; Otherwise, move towards the player
+                      (progn
+                        (setf flip expected-flip)
+                        ;; FIXME: make enemy speed configurable
+                        (setf (chipmunk:x vel) (* 100d0
+                                                  (if (> player-x enemy-x) 1 -1)))))))
+              (setf (chipmunk:velocity body) vel))))))))
 
 (defun make-enemy (position sprite)
   (with-slots (space) (current-app-state)
@@ -87,7 +102,8 @@
                            (make-instance 'physical-system)
                            (make-instance 'render-system)
                            (make-instance 'shooter-system)
-                           (make-instance 'health-system))))
+                           (make-instance 'health-system)
+                           (make-instance 'enemy-system))))
            (obj-id (id enemy-object)))
       (setf (chipmunk:friction shape) 0.5d0)
       (let ((dfloat-x (coerce (car position) 'double-float))
@@ -120,26 +136,7 @@
 
       enemy-object)))
 
-
-(defmethod update :before ((en enemy) &key (dt 1) &allow-other-keys)
-  (with-slots (actor camera) (current-app-state)
-    (with-slots ((player-x x) (player-y y)) actor
-      (with-slots (x x-accel x-move-direction pos-direction weapon sprite y) en
-        (let* ((player-x-w/-camera (+ player-x (car camera)))
-               (player-distance (abs (- player-x-w/-camera x))))
-          (if (< player-distance 300)
-              ;; If the enemy is near the player, stop and shoot
-              (progn
-                (setf x-accel 0)
-                (make-shot weapon
-                           (sprite-width sprite)
-                           (round (/ (sprite-height sprite) 3))))
-              ;; Otherwise, move towards the player
-              (progn
-                (setf x-move-direction (if (> player-x-w/-camera x) 1 -1))
-                (setf pos-direction x-move-direction)
-                (setf x-accel 1))))))))
-
+#|
 (defmethod hurt ((en enemy) (ch weapon-charge-type))
   (with-slots (health) en
     (with-slots (damage-range) ch
@@ -149,14 +146,4 @@
         (when (<= health 0)
           (destroy en)
           (incf (slot-value (current-app-state) 'score)))))))
-
-;; FIXME: this is just a copy of the player's implementation,
-;;        make someone that has weapons a separate trait
-(defmethod select-weapon ((en enemy) weapon-class-name)
-  (with-slots (children weapon) en
-    (let ((child-weapon (find-if
-                         (lambda (child) (typep child weapon-class-name))
-                         children)))
-      (if child-weapon
-          (setf weapon child-weapon)
-          (error (format nil "Weapon ~A isn't a child of the enemy" weapon-class-name))))))
+|#

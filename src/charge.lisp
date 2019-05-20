@@ -8,11 +8,8 @@
    (starting-velocity :initarg :starting-velocity
                       :reader starting-velocity)
    (sprite :initarg :sprite
-           :reader sprite)
-   (mass :initarg :mass
-         :reader mass))
-  (:default-initargs :radius 1 :damage-range '(0 . 0) :starting-velocity '(0d0 . 0d0)
-                     :mass 0.1d0))
+           :reader sprite))
+  (:default-initargs :radius 1 :damage-range '(0 . 0) :starting-velocity '(0d0 . 0d0)))
 
 (defclass weapon-charge-c (component)
   ((charge-type :initarg :charge-type
@@ -20,17 +17,16 @@
    (collision-type :initarg :collision-type)))
 
 (defun make-charge-object (charge-type collision-type shape-filter position flip)
-  (with-accessors ((sprite-name sprite) (mass mass)
+  (with-accessors ((sprite-name sprite) ; (mass mass)
                    (velocity starting-velocity))
       charge-type
     (with-slots (space) (current-app-state)
       (let* ((sprite-width (coerce (sprite-width sprite-name) 'double-float))
              (sprite-height (coerce (sprite-height sprite-name) 'double-float))
-             (moment (chipmunk:moment-for-box mass sprite-width sprite-height))
-             (body (chipmunk:add space (chipmunk:make-body mass moment)))
+             (body (chipmunk:add space (chipmunk:make-kinematic-body)))
              (shape (chipmunk:add space (chipmunk:make-box-shape body sprite-width sprite-height 0d0))))
 
-        (setf (chipmunk:friction shape) 0.5d0)
+        (setf (chipmunk:friction shape) 1d0)
         (setf (chipmunk:collision-type shape) collision-type)
         (setf (chipmunk:shape-filter shape) shape-filter)
 

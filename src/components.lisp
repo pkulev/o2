@@ -227,10 +227,14 @@
       ;; If not, they're the same position
       g-position))
 
-(defun global-position (object)
+
+(defmethod global-position ((tr transform-c))
+  (with-accessors ((pos position) (parent parent)) tr
+    ;; If there is a parent, it'll be noted and translated into a global position
+    ;; If not, it'll just return the global position
+    (local-to-global-position parent pos)))
+
+(defmethod global-position ((object game-object))
   "Gets the global/world position of the object"
   (let ((tr (find-component object 'transform-c)))
-    (with-accessors ((pos position) (parent parent)) tr
-      ;; If there is a parent, it'll be noted and translated into a global position
-      ;; If not, it'll just return the global position
-      (local-to-global-position parent pos))))
+    (global-position tr)))
