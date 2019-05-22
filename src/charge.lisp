@@ -26,6 +26,7 @@
              (body (chipmunk:add space (chipmunk:make-kinematic-body)))
              (shape (chipmunk:add space (chipmunk:make-box-shape body sprite-width sprite-height 0d0))))
 
+        (setf (chipmunk:sensor shape) t)
         (setf (chipmunk:friction shape) 1d0)
         (setf (chipmunk:collision-type shape) collision-type)
         (setf (chipmunk:shape-filter shape) shape-filter)

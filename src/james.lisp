@@ -73,7 +73,7 @@
                                (make-instance 'shooter-c
                                               :bullet-collision-type :player-bullet
                                               :bullet-shape-filter (chipmunk:make-shape-filter
-                                                                    '(:player-bullet) '(:enemy :ground))
+                                                                    '(:player :player-bullet) '(:enemy))
                                               :weapons (list
                                                         (make-instance 'G17
                                                                        :components (list
@@ -89,10 +89,11 @@
                             (make-instance 'render-system)
                             (make-instance 'shooter-system)))))
 
-    (setf (chipmunk:collision-type shape) :james)
-    (setf (chipmunk:shape-filter shape) (chipmunk:make-shape-filter '(:player) '(:ground)))
+    (setf (chipmunk:user-data shape) (cffi:make-pointer (id player)))
+    (setf (chipmunk:collision-type shape) :player)
+    (setf (chipmunk:shape-filter shape) (chipmunk:make-shape-filter '(:player) '(:ground :enemy-bullet)))
 
-    (chipmunk:with-collision-handler-for (handler (space :james :ground))
+    (chipmunk:with-collision-handler-for (handler (space :player :ground))
       (chipmunk:define-collision-begin-callback player-ground-collision (arbiter space data)
         (declare (ignorable arbiter space data))
         (let* ((pl-move-c (find-component player 'player-controlable-c)))

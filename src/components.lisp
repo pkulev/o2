@@ -185,7 +185,11 @@
     (with-accessors ((obj game-object)) system
       (with-accessors ((health health)) h-comp
         (when (<= health 0)
-          (destroy obj))))))
+          ;; FIXME: something better?
+          ;;        If the player dies, the game restarts
+          (if (find-component obj 'player-tag :raise-error nil)
+              (push-event :restart-current-state)
+              (destroy obj)))))))
 
 ;; Component cleanups, which will be done after the physics step
 (defparameter *physical-component-cleanups* '())

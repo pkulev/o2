@@ -90,7 +90,7 @@
 (defun init-collisions (space)
   (chipmunk:clear-collision-types)
 
-  (chipmunk:register-collision-type :james)
+  (chipmunk:register-collision-type :player)
   (chipmunk:register-collision-type :enemy)
   (chipmunk:register-collision-type :ground)
 
@@ -106,33 +106,36 @@
   (chipmunk:register-shape-filter-category :player-bullet)
   ;; Things that should not collide the enemy, and the player bullets should
   (chipmunk:register-shape-filter-category :enemy)
+  (chipmunk:register-shape-filter-category :enemy-bullet)
   ;; The ground, both players and enemies should collide with it
   (chipmunk:register-shape-filter-category :ground)
 
+  (chipmunk:define-collision-begin-callback bullet/health-collision (arbiter space data)
+    (declare (ignorable space data))
+
+    (multiple-value-bind (bullet-shape ent-shape) (chipmunk:shapes arbiter)
+      (let* ((bullet-id (cffi:pointer-address (autowrap:ptr (chipmunk:user-data bullet-shape))))
+             (bullet-obj (find-object-by-id (current-app-state) bullet-id))
+             (ent-id (cffi:pointer-address (autowrap:ptr (chipmunk:user-data ent-shape))))
+             (ent-obj (find-object-by-id (current-app-state) ent-id)))
+        (when bullet-obj
+          (destroy bullet-obj)
+
+          (when ent-obj
+            (let* ((health-c (find-component ent-obj 'health-c))
+                   (damage-range
+                     (damage-range
+                      (charge-type
+                       (find-component bullet-obj 'weapon-charge-c))))
+                   (damage (+ (car damage-range) (random (cdr damage-range)))))
+              (with-accessors ((health health)) health-c
+                (setf health (- health damage))))))))
+
+    1)
   (chipmunk:with-collision-handler-for (handler (space :player-bullet :enemy))
-      (chipmunk:define-collision-begin-callback player-bullet/enemy-collision (arbiter space data)
-        (declare (ignorable space data))
-
-        (multiple-value-bind (bullet-shape enemy-shape) (chipmunk:shapes arbiter)
-          (let* ((bullet-id (cffi:pointer-address (autowrap:ptr (chipmunk:user-data bullet-shape))))
-                 (bullet-obj (find-object-by-id (current-app-state) bullet-id))
-                 (enemy-id (cffi:pointer-address (autowrap:ptr (chipmunk:user-data enemy-shape))))
-                 (enemy-obj (find-object-by-id (current-app-state) enemy-id)))
-            (when bullet-obj
-              (destroy bullet-obj)
-
-              (when enemy-obj
-                (let* ((health-c (find-component enemy-obj 'health-c))
-                       (damage-range
-                         (damage-range
-                          (charge-type
-                           (find-component bullet-obj 'weapon-charge-c))))
-                       (damage (+ (car damage-range) (random (cdr damage-range)))))
-                  (with-accessors ((health health)) health-c
-                    (setf health (- health damage))))))))
-
-        1)
-    (setf (chipmunk:begin-collision-fun handler) 'player-bullet/enemy-collision)))
+    (setf (chipmunk:begin-collision-fun handler) 'bullet/health-collision))
+  (chipmunk:with-collision-handler-for (handler (space :enemy-bullet :player))
+    (setf (chipmunk:begin-collision-fun handler) 'bullet/health-collision)))
 
 (defmethod update ((state ingame-state) &key dt &allow-other-keys)
   (declare (ignorable dt))
