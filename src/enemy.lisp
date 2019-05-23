@@ -94,7 +94,9 @@
                                                                                 (make-instance 'transform-c))
                                                                    :ammo 32
                                                                    :current-ammo 17
-                                                                   :sprite :G17))
+                                                                   :sprite :G17
+                                                                   ;; Make the cooldown roughly 2 times bigger
+                                                                   :cooldown 600000000))
                                           :current-weapon 'G17)
                            (make-instance 'health-c))
                           :systems

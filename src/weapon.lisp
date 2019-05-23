@@ -13,9 +13,11 @@
    (max-ammo :initform 0
              :accessor max-ammo)
    (current-charge :initform nil
+                   :initarg :current-charge
                    :accessor current-charge)
    ;; FIXME: change to milliseconds when delta-time is introduced into the codebase
    (cooldown :initform 300000000 ; nsec
+             :initarg :cooldown
              :reader cooldown)
    (last-shot :initform (local-time:unix-to-timestamp 0)
               :accessor last-shot)
@@ -84,8 +86,8 @@
                                                     spawn-pos
                                                     flip))))))))))))
 
-(defclass G17 (weapon)
-  ((current-charge :initform *9x19*)))
+(defclass G17 (weapon) ()
+  (:default-initargs :current-charge *9x19*))
 
 (defclass MP5SD (weapon)
   ((current-charge :initform *9x19*)))
