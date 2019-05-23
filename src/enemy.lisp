@@ -137,15 +137,3 @@
                         (make-instance 'text-widget-system)))))
 
       enemy-object)))
-
-#|
-(defmethod hurt ((en enemy) (ch weapon-charge-type))
-  (with-slots (health) en
-    (with-slots (damage-range) ch
-      ;; (+ lower-bound (random upper-bound)) is how you do random in CL
-      (let ((damage (+ (car damage-range) (random (cdr damage-range)))))
-        (setf health (- health damage))
-        (when (<= health 0)
-          (destroy en)
-          (incf (slot-value (current-app-state) 'score)))))))
-|#

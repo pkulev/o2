@@ -35,7 +35,7 @@
                  :space space))
 
     (add-object ingame
-                (make-instance 'background
+                (make-instance 'game-object
                                :components (list
                                             (make-instance 'transform-c
                                                            :position (cons -512 -385))

@@ -14,7 +14,6 @@
                (:file "o2")
                (:file "gobject")
                (:file "ui")
-               (:file "background")
                (:file "charge")
                (:file "james")
                (:file "enemy")
