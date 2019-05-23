@@ -32,8 +32,12 @@
 
 (defun deregister-state (app state-name)
   (with-slots (states) app
-    (when (gethash state-name states)
-      (setf (gethash state-name states) nil))))
+    (let ((maybe-st (gethash state-name states)))
+      (when maybe-st
+        ;; FIXME: cleanup? this breaks stuff somehow, because
+        ;;        removing the body from the space twice is not allowed
+        ;; (cleanup maybe-st)
+        (setf (gethash state-name states) nil)))))
 
 (defun register-state (app state)
   (with-slots ((ren renderer) states current-state) app
@@ -122,7 +126,11 @@
             (continuable
               (sdl2:with-event-loop (:method :poll)
                 (:restart-current-state ()
-                                        (init-state app))
+                                        ;; FIXME: ugly
+                                        (let ((name (class-name (class-of (current-app-state)))))
+                                          (deregister-state *application* name)
+                                          (register-state *application* name)
+                                          (set-state *application* name)))
                 (:change-current-state (:user-data state-name)
                  (set-state *application* state-name))
                 (:idle ()
