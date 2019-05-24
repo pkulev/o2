@@ -81,7 +81,8 @@
                                                                        :ammo 32
                                                                        :current-ammo 17
                                                                        :sprite :G17))
-                                              :current-weapon 'G17))
+                                              :current-weapon 'G17)
+                               (make-instance 'invincibility-c))
                   :systems (list
                             (make-instance 'health-system)
                             (make-instance 'physical-system)
@@ -115,11 +116,15 @@
                                                 :data-getter
                                                 (lambda ()
                                                   (with-accessors ((player actor)) (current-app-state)
-                                                    (let ((health-c (find-component player 'health-c)))
-                                                      (format nil "~A/~A ~A"
-                                                            (health health-c)
-                                                            (max-health health-c)
-                                                            (if (is-invincible player) "[I]" "")))))))
+                                                    (let ((health-c (find-component player 'health-c))
+                                                          (invinc-c (find-component player 'invincibility-c)))
+                                                      (format
+                                                       nil
+                                                       "~A/~A ~A"
+                                                       (health health-c)
+                                                       (max-health health-c)
+                                                       (if
+                                                        (and invinc-c (is-invincible invinc-c)) "[I]" "")))))))
                                 :systems
                                 (list
                                  (make-instance 'text-widget-system)))))

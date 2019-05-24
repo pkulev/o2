@@ -122,14 +122,27 @@
           (destroy bullet-obj)
 
           (when ent-obj
-            (let* ((health-c (find-component ent-obj 'health-c))
+            (let* ((invinc-c (find-component ent-obj 'invincibility-c :raise-error nil))
+                   (health-c (find-component ent-obj 'health-c))
                    (damage-range
                      (damage-range
                       (charge-type
                        (find-component bullet-obj 'weapon-charge-c))))
                    (damage (+ (car damage-range) (random (cdr damage-range)))))
-              (with-accessors ((health health)) health-c
-                (setf health (- health damage))))))))
+
+              (block hurting-block
+                ;; When there is an invincible-c, the system will also check
+                ;; if the entity is invincible before trying to hurt it
+                (when invinc-c
+                  (with-accessors ((hit-time last-hit-time)) invinc-c
+                    ;; If the the entity is not invincible, the last-hit-time will be updated, otherwise
+                    ;; return from the surrouding block, preventing damage
+                    (if (not (is-invincible invinc-c))
+                        (setf hit-time (local-time:now))
+                        (return-from hurting-block))))
+
+                (with-accessors ((health health)) health-c
+                  (setf health (- health damage)))))))))
 
     1)
   (chipmunk:with-collision-handler-for (handler (space :player-bullet :enemy))

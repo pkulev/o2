@@ -47,6 +47,21 @@
            :accessor health))
   (:default-initargs :health 100 :max-health 100))
 
+(defclass invincibility-c (component)
+  ((last-hit-time
+    ;; unix-to-timestamp 0 is definetly less than any other time
+    :initform (local-time:unix-to-timestamp 0)
+    :accessor last-hit-time)
+   (invinc-seconds :initarg :invinc-seconds
+                   :accessor invinc-seconds))
+  (:default-initargs :invinc-seconds 2))
+
+(defmethod is-invincible ((invinc-comp invincibility-c))
+  "If the current time is more than the time that needs to pass for invincibility to work,
+   the entity is not invincible"
+  (with-accessors ((hit-time last-hit-time) (invinc-secs invinc-seconds)) invinc-comp
+    (not (local-time:timestamp> (local-time:now) (local-time:timestamp+ hit-time invinc-secs :sec)))))
+
 (defclass player-tag (component) ())
 (defclass camera-tag (component) ())
 
