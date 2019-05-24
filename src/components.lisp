@@ -52,7 +52,11 @@
 
 (defclass system ()
   ((requires :initform '()
-             :accessor requires)
+             :accessor requires
+             :documentation "Components required for the system.
+                             A list of either component class names or
+                             (:designator name) for special components, currently the only one available
+                             is :optional")
    (game-object :reader game-object)))
 
 (defclass physical-system (system)
@@ -101,8 +105,18 @@
         ;; find-component function
         ;; TODO: have a way to handle not finding components, like a special signal or something
         (let ((found-required-components
-                (loop for required-comp-name in requirements
-                      collect (find-component object required-comp-name))))
+                (loop for required-comp in requirements
+                      collect
+                      (if (listp required-comp)
+                          ;; If the component is a list, then it must be in the
+                          ;; (:designator name) format and indicates some kind of special
+                          ;; component. Currently, only :optional is valid, but that might
+                          ;; change in the future.
+                          (destructuring-bind (designator name) required-comp
+                            (ecase designator
+                              (:optional (find-component object name :raise-error nil))))
+                          ;; Otherwise, look up the component and throw a error if it was not found
+                          (find-component object required-comp :raise-error t)))))
           (run-system system found-required-components))))))
 
 
