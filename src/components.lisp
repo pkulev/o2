@@ -44,8 +44,10 @@
   ((max-health :initarg :max-health
                :accessor max-health)
    (health :initarg :health
-           :accessor health))
-  (:default-initargs :health 100 :max-health 100))
+           :accessor health)
+   (death-action :initarg :death-action
+                 :accessor death-action))
+  (:default-initargs :health 100 :max-health 100 :death-action nil))
 
 (defclass invincibility-c (component)
   ((last-hit-time
@@ -212,13 +214,10 @@
 (defmethod run-system ((system health-system) found-components)
   (destructuring-bind (h-comp) found-components
     (with-accessors ((obj game-object)) system
-      (with-accessors ((health health)) h-comp
+      (with-accessors ((health health) (d-action death-action)) h-comp
         (when (<= health 0)
-          ;; FIXME: something better?
-          ;;        If the player dies, the game restarts
-          (if (find-component obj 'player-tag :raise-error nil)
-              (push-event :restart-current-state)
-              (destroy obj)))))))
+          (when d-action
+            (funcall d-action)))))))
 
 ;; Component cleanups, which will be done after the physics step
 (defparameter *physical-component-cleanups* '())

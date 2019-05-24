@@ -97,8 +97,7 @@
                                                                    :sprite :G17
                                                                    ;; Make the cooldown roughly 2 times bigger
                                                                    :cooldown 600000000))
-                                          :current-weapon 'G17)
-                           (make-instance 'health-c))
+                                          :current-weapon 'G17))
                           :systems
                           (list
                            (make-instance 'physical-system)
@@ -107,6 +106,14 @@
                            (make-instance 'health-system)
                            (make-instance 'enemy-system))))
            (obj-id (id enemy-object)))
+      ;; FIXME: to destroy the object, health-c needs a reference to the object itself,
+      ;;        which is only available after the object's creation
+      (push (make-instance 'health-c
+                           :death-action (lambda ()
+                                           (incf (score (current-app-state)))
+                                           (destroy enemy-object)))
+            (components enemy-object))
+
       (setf (chipmunk:friction shape) 0.5d0)
       (let ((dfloat-x (coerce (car position) 'double-float))
             (dfloat-y (coerce (cdr position) 'double-float)))

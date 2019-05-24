@@ -15,10 +15,10 @@
        :reader id)
    (components :initform (list)
                :initarg :components
-               :reader components)
+               :accessor components)
    (systems :initform (list)
             :initarg :systems
-            :reader systems)))
+            :accessor systems)))
 
 (defmethod initialize-instance :after ((obj game-object) &key)
   ;; Set all the "game-object" slots to this object

@@ -61,7 +61,9 @@
                   'james
                   :components (list
                                (make-instance 'player-tag)
-                               (make-instance 'health-c)
+                               (make-instance 'health-c
+                                              :death-action (lambda ()
+                                                              (push-event :restart-current-state)))
                                (make-instance 'player-controlable-c)
                                (make-instance 'transform-c :position position)
                                (make-instance 'physical-c
