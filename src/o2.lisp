@@ -1,8 +1,12 @@
 (in-package :o2)
 
-(defun main (&key (core-is-root nil))
+(defparameter *core-is-root* nil
+  "Should the image file be the root of the project,
+   or should it be determined at runtime (switch to t for packaging)")
+
+(defun main ()
   (defparameter +root+
-    (if core-is-root
+    (if *core-is-root*
         *default-pathname-defaults*
         (asdf:system-source-directory :o2))
     "Project root absolute path.")
