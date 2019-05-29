@@ -13,40 +13,28 @@
                                      dfloat-width
                                      dfloat-height
                                      0d0)))
-         (player (make-instance
-                  'game-object
-                  :components (list
-                               (make-instance 'player-tag)
-                               (make-instance 'health-c
-                                              :death-action (lambda ()
-                                                              (push-event :restart-current-state)))
-                               (make-instance 'player-controlable-c)
-                               (make-instance 'transform-c :position position)
-                               (make-instance 'physical-c
-                                              :rigid-body rigid-body
-                                              :shape shape)
-                               (make-instance 'render-c
-                                              :sprite :player
-                                              :render-priority 2)
-                               (make-instance 'shooter-c
-                                              :bullet-collision-type :player-bullet
-                                              :bullet-shape-filter (chipmunk:make-shape-filter
-                                                                    '(:player :player-bullet) '(:enemy))
-                                              :weapons (list
-                                                        (make-instance 'G17
-                                                                       :components (list
-                                                                                    (make-instance 'transform-c))
-                                                                       :ammo 32
-                                                                       :current-ammo 17
-                                                                       :sprite :G17))
-                                              :current-weapon 'G17)
-                               (make-instance 'invincibility-c))
-                  :systems (list
-                            (make-instance 'health-system)
-                            (make-instance 'physical-system)
-                            (make-instance 'player-controlable-system)
-                            (make-instance 'render-system)
-                            (make-instance 'shooter-system)))))
+         (player
+           (make-game-object
+               :components (player-tag player-controlable-c invincibility-c
+                            (health-c :death-action (lambda ()
+                                                      (push-event :restart-current-state)))
+                            (transform-c :position position)
+                            (physical-c :rigid-body rigid-body :shape shape)
+                            (render-c :sprite :player :render-priority 2)
+                            (shooter-c
+                             :bullet-collision-type :player-bullet
+                             :bullet-shape-filter (chipmunk:make-shape-filter
+                                                   '(:player :player-bullet) '(:enemy))
+                             :weapons (list
+                                       (make-instance 'G17
+                                                      :components (list
+                                                                   (make-instance 'transform-c))
+                                                      :ammo 32
+                                                      :current-ammo 17
+                                                      :sprite :G17))
+                             :current-weapon 'G17))
+                  :systems (health-system physical-system player-controlable-system
+                                          render-system shooter-system))))
 
     (setf (chipmunk:user-data shape) (cffi:make-pointer (id player)))
     (setf (chipmunk:collision-type shape) :player)
@@ -65,27 +53,24 @@
     (add-child
      player
      (add-object (current-app-state)
-                 (make-instance 'game-object
-                                :components
-                                (list
-                                 (make-instance 'transform-c)
-                                 (make-instance 'render-c :render-priority 2)
-                                 (make-instance 'text-widget-c
-                                                :data-getter
-                                                (lambda ()
-                                                  (with-accessors ((player actor)) (current-app-state)
-                                                    (let ((health-c (find-component player 'health-c))
-                                                          (invinc-c (find-component player 'invincibility-c)))
-                                                      (format
-                                                       nil
-                                                       "~A/~A ~A"
-                                                       (health health-c)
-                                                       (max-health health-c)
-                                                       (if
-                                                        (and invinc-c (is-invincible invinc-c)) "[I]" "")))))))
-                                :systems
-                                (list
-                                 (make-instance 'text-widget-system)))))
+                 (make-game-object
+                     :components
+                     (transform-c
+                      (render-c :render-priority 2)
+                      (text-widget-c
+                       :data-getter
+                       (lambda ()
+                         (with-accessors ((player actor)) (current-app-state)
+                           (let ((health-c (find-component player 'health-c))
+                                 (invinc-c (find-component player 'invincibility-c)))
+                             (format
+                              nil
+                              "~A/~A ~A"
+                              (health health-c)
+                              (max-health health-c)
+                              (if
+                               (and invinc-c (is-invincible invinc-c)) "[I]" "")))))))
+                     :systems (text-widget-system))))
 
     (setf (chipmunk:friction shape) 0.5d0)
     (let ((dfloat-x (coerce (car position) 'double-float))

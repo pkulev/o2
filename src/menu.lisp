@@ -67,91 +67,66 @@
   ;; A static camera
   (add-object
    menu
-   (make-instance
-    'game-object
-    :components (list
-                 (make-instance 'transform-c)
-                 (make-instance 'camera-tag))))
+   (make-game-object :components (transform-c camera-tag)))
 
   ;; The background image
   (add-object
    menu
-   (make-instance
-    'game-object
-    :components
-    (list
-     (make-instance 'transform-c :position '(-512 . -385))
-     (make-instance 'render-c :sprite :background
-                              :render-priority 0))
-    :systems
-    (list
-     (make-instance 'render-system))))
+   (make-game-object
+       :components
+       ((transform-c :position '(-512 . -385))
+        (render-c :sprite :background
+                  :render-priority 0))
+       :systems
+       (render-system)))
 
   (add-object
    menu
-   (make-instance 'game-object
-                  :components
-                  (list
-                   (make-instance 'render-c :sprite :logo
-                                            :render-priority 1)
-                   (make-instance 'transform-c :position '(150 . 100)))
-                  :systems (list
-                            (make-instance 'render-system))))
+   (make-game-object
+       :components
+       ((render-c :sprite :logo
+                  :render-priority 1)
+        (transform-c :position '(150 . 100)))
+       :systems (render-system)))
 
   (let* ((menu-object
            (add-object
             menu
-            (make-instance 'game-object
-                           :components
-                           (list
-                            (make-instance 'transform-c))
-                           :systems
-                           (list
-                            (make-instance 'menu-system)))))
+            (make-game-object :components (transform-c) :systems (menu-system))))
          (button-w 500)
          (button-h 100)
          (base-butt-x (- (/ 1024 2) (/ button-w 2)))
          (base-butt-y (+ (/ 768 2) (/ button-h 2))))
 
     (add-child
-          menu-object
-          (add-object
-           menu
-           (make-instance
-            'game-object
-            :components (list
-                         (make-instance 'transform-c
-                                        :position (cons base-butt-x base-butt-y))
-                         (make-instance 'render-c
-                                        :render-priority 1)
-                         (make-instance 'menu-choice-c
-                                        :color '(29 149 182 128)
-                                        :selected-color '(17 95 118 192)
-                                        :dimensions (cons button-w button-h)
-                                        :choice-number 0
-                                        :text "New game"
-                                        :action (lambda ()
-                                                  (push-event :change-current-state 'ingame-state))))
-            :systems (list
-                      (make-instance 'menu-choice-system)))))
+     menu-object
+     (add-object
+      menu
+      (make-game-object
+          :components ((transform-c :position (cons base-butt-x base-butt-y))
+                       (render-c :render-priority 1)
+                       (menu-choice-c
+                        :color '(29 149 182 128)
+                        :selected-color '(17 95 118 192)
+                        :dimensions (cons button-w button-h)
+                        :choice-number 0
+                        :text "New game"
+                        :action (lambda ()
+                                  (push-event :change-current-state 'ingame-state))))
+          :systems (menu-choice-system))))
     (add-child
      menu-object
      (add-object
       menu
-      (make-instance
-       'game-object
-       :components (list
-                    (make-instance 'transform-c
-                                   :position (cons base-butt-x
-                                                   (+ base-butt-y button-h 25)))
-                    (make-instance 'render-c
-                                   :render-priority 1)
-                    (make-instance 'menu-choice-c
-                                   :color '(29 149 182 128)
-                                   :selected-color '(17 95 118 192)
-                                   :dimensions (cons button-w button-h)
-                                   :choice-number 1
-                                   :text "Exit"
-                                   :action (lambda () (push-event :restart-current-state))))
-       :systems (list
-                 (make-instance 'menu-choice-system)))))))
+      (make-game-object
+          :components ((transform-c :position (cons base-butt-x
+                                                    (+ base-butt-y button-h 25)))
+                       (render-c :render-priority 1)
+                       (menu-choice-c
+                        :color '(29 149 182 128)
+                        :selected-color '(17 95 118 192)
+                        :dimensions (cons button-w button-h)
+                        :choice-number 1
+                        :text "Exit"
+                        :action (lambda () (push-event :restart-current-state))))
+          :systems (menu-choice-system))))))

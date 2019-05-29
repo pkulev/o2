@@ -77,34 +77,28 @@
                                        (coerce (sprite-width :bad-guy) 'double-float)
                                        (coerce (sprite-height :bad-guy) 'double-float)
                                        0d0)))
-           (enemy-object (make-instance
-                          'game-object
+           (enemy-object (make-game-object
                           :components
-                          (list
-                           (make-instance 'physical-c :shape shape :rigid-body rigid-body)
-                           (make-instance 'transform-c)
-                           (make-instance 'render-c :sprite sprite :render-priority 2)
-                           (make-instance 'shooter-c
-                                          :bullet-collision-type :enemy-bullet
-                                          :bullet-shape-filter (chipmunk:make-shape-filter
-                                                                '(:enemy-bullet :enemy) '(:player))
-                                          :weapons (list
-                                                    (make-instance 'G17
-                                                                   :components (list
-                                                                                (make-instance 'transform-c))
-                                                                   :ammo 32
-                                                                   :current-ammo 17
-                                                                   :sprite :G17
-                                                                   ;; Make the cooldown roughly 2 times bigger
-                                                                   :cooldown 600000000))
-                                          :current-weapon 'G17))
+                             (transform-c
+                              (physical-c :shape shape :rigid-body rigid-body)
+                              (render-c :sprite sprite :render-priority 2)
+                              (shooter-c
+                               :bullet-collision-type :enemy-bullet
+                               :bullet-shape-filter (chipmunk:make-shape-filter
+                                                     '(:enemy-bullet :enemy) '(:player))
+                               :weapons (list
+                                         (make-instance 'G17
+                                                        :components (list
+                                                                     (make-instance 'transform-c))
+                                                        :ammo 32
+                                                        :current-ammo 17
+                                                        :sprite :G17
+                                                        ;; Make the cooldown roughly 2 times bigger
+                                                        :cooldown 600000000))
+                               :current-weapon 'G17))
                           :systems
-                          (list
-                           (make-instance 'physical-system)
-                           (make-instance 'render-system)
-                           (make-instance 'shooter-system)
-                           (make-instance 'health-system)
-                           (make-instance 'enemy-system))))
+                          (physical-system render-system shooter-system
+                                           health-system enemy-system)))
            (obj-id (id enemy-object)))
       ;; FIXME: to destroy the object, health-c needs a reference to the object itself,
       ;;        which is only available after the object's creation
@@ -129,18 +123,15 @@
        enemy-object
        (add-object
         (current-app-state)
-        (make-instance 'game-object
-                       :components
-                       (list
-                        (make-instance 'transform-c)
-                        (make-instance 'render-c :render-priority 2)
-                        (make-instance 'text-widget-c
-                                       :data-getter
-                                       (lambda ()
-                                         (let ((health-c (find-component enemy-object 'health-c)))
-                                           (format nil "~A/~A" (health health-c) (max-health health-c))))))
-                       :systems
-                       (list
-                        (make-instance 'text-widget-system)))))
+        (make-game-object
+            :components
+            (transform-c
+             (render-c :render-priority 2)
+             (text-widget-c
+              :data-getter
+              (lambda ()
+                (let ((health-c (find-component enemy-object 'health-c)))
+                  (format nil "~A/~A" (health health-c) (max-health health-c))))))
+            :systems (text-widget-system))))
 
       enemy-object)))

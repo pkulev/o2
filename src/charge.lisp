@@ -41,19 +41,13 @@
                                           (coerce x 'double-float)
                                           (coerce y 'double-float))))
 
-        (let* ((charge-obj (make-instance
-                            'game-object
-                            :components (list
-                                         (make-instance 'transform-c)
-                                         (make-instance 'physical-c :shape shape
-                                                                    :rigid-body body)
-                                         (make-instance 'render-c :sprite sprite-name
-                                                                  :render-priority 2)
-                                         (make-instance 'weapon-charge-c :charge-type charge-type
-                                                                         :collision-type collision-type))
-                            :systems (list
-                                      (make-instance 'physical-system)
-                                      (make-instance 'render-system))))
+        (let* ((charge-obj (make-game-object
+                               :components (transform-c
+                                            (physical-c :shape shape :rigid-body body)
+                                            (render-c :sprite sprite-name :render-priority 2)
+                                            (weapon-charge-c :charge-type charge-type
+                                                             :collision-type collision-type))
+                               :systems (physical-system render-system)))
                (obj-id (id charge-obj)))
 
           ;; TODO: set collision category to collide with enemies

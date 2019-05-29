@@ -35,51 +35,32 @@
                  :space space))
 
     (add-object ingame
-                (make-instance 'game-object
-                               :components (list
-                                            (make-instance 'transform-c
-                                                           :position (cons -512 -385))
-                                            (make-instance 'render-c
-                                                           :sprite :background
-                                                           :render-priority 1))
-                               :systems (list
-                                         (make-instance 'render-system))))
+                (make-game-object
+                    :components ((transform-c :position (cons -512 -385))
+                                 (render-c :sprite :background :render-priority 1))
+                    :systems (render-system)))
 
     (add-object ingame actor)
 
     ;; Enemy spawner
     (add-object ingame
-                (make-instance 'game-object
-                               :components
-                               (list
-                                (make-instance 'transform-c)
-                                (make-instance 'enemy-spawner-c))
-                               :systems
-                               (list
-                                (make-instance 'enemy-spawner-system))))
+                (make-game-object
+                    :components (transform-c enemy-spawner-c)
+                    :systems (enemy-spawner-system)))
 
-    (add-object ingame (make-instance
-                        'game-object
-                        :components (list
-                                     (make-instance 'transform-c)
-                                     (make-instance 'render-c
-                                                    :render-priority 2)
-                                     (make-instance 'text-widget-c
-                                                    :data-getter
-                                                    (lambda ()
-                                                      (format nil "Score: ~A"
-                                                              (score (current-app-state))))))
-                        :systems (list
-                                  (make-instance 'text-widget-system))))
+    (add-object ingame (make-game-object
+                        :components (transform-c
+                                     (render-c :render-priority 2)
+                                     (text-widget-c
+                                      :data-getter
+                                      (lambda ()
+                                        (format nil "Score: ~A"
+                                                (score (current-app-state))))))
+                        :systems (text-widget-system)))
 
 
-    (add-object ingame (make-instance
-                        'game-object
-                        :components (list
-                                     (make-instance 'transform-c)
-                                     (make-instance 'camera-tag))
-                        :systems (list
-                                  (make-instance 'camera-system))))
+    (add-object ingame (make-game-object :components (transform-c camera-tag)
+                                         :systems (camera-system)))
 
     ;;(add-object ingame (make-instance 'text-widget
     ;;                                  :x 0 :y 0

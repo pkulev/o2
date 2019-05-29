@@ -20,6 +20,29 @@
             :initarg :systems
             :accessor systems)))
 
+(defmacro make-game-object (&key components systems)
+  "Constructs a new game object with thr specified components and systems.
+
+   The component/system (just component from here on) can be of two forms:
+   (component-name arguments...), which will create a component of class component-name with the provided
+   arguments passed to make-instance; and component-name, without any arguments, which will create the component
+   with make-instance and not pass any arguments to it (e.g. systems don't need arguments,
+   so it's very handy that way)
+
+   Example usage: (make-game-object :components (component-1 (component-2 arg-1))
+                                    :systems (system-1 system-2))
+  "
+  (flet ((lists-to-makes (lst)
+           (loop for data in lst
+                 collect (etypecase data
+                           (list
+                            (destructuring-bind (class-name &rest args) data
+                              `(make-instance ',class-name ,@args)))
+                           (symbol `(make-instance ',data))))))
+    `(make-instance 'game-object
+                    :components (list ,@(lists-to-makes components))
+                    :systems (list ,@(lists-to-makes systems)))))
+
 (defmethod initialize-instance :after ((obj game-object) &key)
   ;; Set all the "game-object" slots to this object
   (dolist (system (systems obj))
