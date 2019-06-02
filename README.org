@@ -13,7 +13,7 @@
   - Let quicklisp know about =o2= system:
   #+BEGIN_SRC sh
     $ # clone directly to local-projects
-    $ git clone https://github.com/pkulev/o2.git ~/quicklisp/local-projects/
+    $ git clone https://github.com/pkulev/o2.git ~/quicklisp/local-projects/o2
     $ # or create symlink
     $ ln -s /path/to/o2 ~/quicklisp/local-projects/o2
   #+END_SRC
