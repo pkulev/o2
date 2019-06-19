@@ -182,6 +182,11 @@
             (when (sdl2:keyboard-state-p :scancode-return)
               (with-accessors ((shoot? shoot?)) shooter-comp
                 (setf shoot? t)))
+            (when (sdl2:keyboard-state-p :scancode-r)
+              (with-accessors ((shoot? shoot?)
+                               (reload? reload?)) shooter-comp
+                (unless shoot?
+                  (setf reload? t))))
 
             (setf (chipmunk:velocity body) vel)))))))
 

@@ -4,9 +4,12 @@
   ;; FIXME: Move the sprite to a component
   ((sprite :initform nil
            :initarg :sprite)
-   (current-ammo :initform 0
-                 :initarg :current-ammo
-                 :accessor current-ammo)
+   (ammo-in-mag :initform 0
+             :initarg :ammo-in-mag
+             :accessor ammo-in-mag)
+   (mag-capacity :initform 0
+                 :initarg :mag-capacity
+                 :accessor mag-capacity)
    (ammo :initform 0
          :initarg :ammo
          :accessor ammo)
@@ -22,11 +25,60 @@
    (last-shot :initform (local-time:unix-to-timestamp 0)
               :accessor last-shot)
    (current-cooldown :initform 0
-                     :reader current-cooldown)))
+                     :reader current-cooldown)
+   (chambered? :initform nil
+               :initarg :chambered?
+               :accessor chambered?)))
+
+(defmethod cooled-down? ((w weapon))
+  "Return whether weapon cooldown finished."
+
+  (with-accessors ((last-shot last-shot)
+                   (cooldown cooldown)) w
+
+    (local-time:timestamp> (local-time:now)
+                           (local-time:timestamp+ last-shot cooldown :nsec))))
+
+(defmethod ready? ((w weapon))
+  "Return if weapon ready to send out some gifts by pulling trigger."
+
+  (with-accessors ((cooled-down? cooled-down?)
+                   (chambered? chambered?)) w
+
+    (format t "cooled: ~a, chambered ~a, ammo: ~a/~a ~%" cooled-down? chambered?
+            (ammo-in-mag w) (ammo w))
+    (and cooled-down? chambered?)))
+
+;; TODO: implement some sort of pop-up with notice to user
+(defmethod click-clack ((w weapon))
+  "Current mag is empty."
+
+  (format t "I've heard you're empty. Too bad!~%"))
+
+(defmethod reload ((w weapon))
+  "Reload the weapon.
+
+  Take amount of cartriges we need to fill magazine, or what we have.
+  Then load mag and substract the amount we loaded from all ammo we have."
+
+  (format t "reloading~%")
+  (with-accessors ((ammo ammo)
+                   (ammo-in-mag ammo-in-mag)
+                   (mag-capacity mag-capacity)) w
+
+    (when (> ammo 0)
+      (let* ((ammo-to-load (- mag-capacity ammo-in-mag))
+             (amount (if (> ammo-to-load ammo) ammo ammo-to-load)))
+
+        (setf ammo-in-mag (+ ammo-in-mag amount))
+        (setf ammo (- ammo amount))))))
+
 
 (defclass shooter-c (component)
   ((shoot? :accessor shoot?
            :initform nil)
+   (reload? :accessor reload?
+            :initform nil)
    (weapons :accessor weapons
             :initarg :weapons)
    (current-weapon :accessor current-weapon
@@ -45,29 +97,49 @@
 (defmethod run-system ((system shooter-system) found-components)
   (destructuring-bind (shoot-comp tr render-c) found-components
     (with-accessors ((shoot? shoot?)
-                     (weaps weapons)
-                     (curr-weap current-weapon)
-                     (coll-type bullet-collision-type)
-                     (shp-filter bullet-shape-filter))
+                     (reload? reload?)
+                     (weapons weapons)
+                     (current-weapon current-weapon)
+                     (bullet-collision-type bullet-collision-type)
+                     (bullet-shape-filter bullet-shape-filter))
         shoot-comp
+
+      (when reload?
+        ;; TODO: add ability to abort reloading by taking damage
+        (setf reload? nil)
+
+        ;; TODO: fix this copy-paste
+        (let ((the-weapon (find-if (lambda (w) (typep w current-weapon)) weapons)))
+          (when (null the-weapon)
+            ;; TODO: add a way for components to link to the object they're attached to
+            (error "Weapon ~A not found" current-weapon))
+
+          (reload the-weapon)))
 
       (when shoot?
         ;; The shot is actually happening, reset the "shoot?" value
         (setf shoot? nil)
 
-        (let ((the-weapon (find-if (lambda (w) (typep w curr-weap)) weaps)))
+        (let ((the-weapon (find-if (lambda (w) (typep w current-weapon)) weapons)))
           (when (null the-weapon)
             ;; TODO: add a way for components to link to the object they're attached to
-            (error "Weapon ~A not found" curr-weap))
+            (error "Weapon ~A not found" current-weapon))
 
-          (with-accessors ((cooldown cooldown) (last-shot last-shot)) the-weapon
-            (when (local-time:timestamp>
-                   (local-time:now)
-                   (local-time:timestamp+ last-shot
-                                          cooldown
-                                          :nsec))
-              ;; If the cooldown already passed, update the last time shot and shoot
+          (with-accessors ((cooldown cooldown)
+                           (last-shot last-shot)
+                           (chambered? chambered?)
+                           (ready? ready?)
+                           (ammo-in-mag ammo-in-mag)) the-weapon
+            (when ready?
+              ;; When weapon is ready, update the last time shot and shoot
               (setf last-shot (local-time:now))
+              ;; Charge already gone
+              (setf chambered? nil)
+              (if (zerop ammo-in-mag)
+                  (click-clack the-weapon)
+                  (progn
+                    (setf chambered? t)
+                    (setf ammo-in-mag (1- ammo-in-mag))))
 
               (with-accessors ((par parent)) tr
                 (with-accessors ((flip flip) (sprite sprite)) render-c
@@ -81,8 +153,8 @@
 
                     (add-object (current-app-state)
                                 (make-charge-object (current-charge the-weapon)
-                                                    coll-type
-                                                    shp-filter
+                                                    bullet-collision-type
+                                                    bullet-shape-filter
                                                     spawn-pos
                                                     flip))))))))))))
 

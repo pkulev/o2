@@ -91,7 +91,9 @@
                                                         :components (list
                                                                      (make-instance 'transform-c))
                                                         :ammo 32
-                                                        :current-ammo 17
+                                                        :ammo-in-mag 17
+                                                        :mag-capacity 17
+                                                        :chambered? t
                                                         :sprite :G17
                                                         ;; Make the cooldown roughly 2 times bigger
                                                         :cooldown 600000000))
