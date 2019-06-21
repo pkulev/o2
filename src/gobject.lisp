@@ -41,13 +41,7 @@
                            (symbol `(make-instance ',data))))))
     `(make-instance 'game-object
                     :components (list ,@(lists-to-makes components))
-                    :systems (list ,@(lists-to-makes systems)))))
-
-(defmethod initialize-instance :after ((obj game-object) &key)
-  ;; Set all the "game-object" slots to this object
-  (dolist (system (systems obj))
-    (with-slots (game-object) system
-      (setf game-object obj))))
+                    :systems ',systems)))
 
 (defmethod get-rect ((object game-object))
   (with-slots (x y sprite) object

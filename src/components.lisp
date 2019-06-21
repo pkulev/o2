@@ -73,8 +73,7 @@
              :documentation "Components required for the system.
                              A list of either component class names or
                              (:designator name) for special components, currently the only one available
-                             is :optional")
-   (game-object :reader game-object)))
+                             is :optional")))
 
 (defclass physical-system (system)
   ((requires :initform '(transform-c physical-c render-c))))
@@ -114,27 +113,41 @@
      objects)))
 
 (defmethod run-systems (object)
-  (with-accessors ((systems systems) (components components)) object
-    (dolist (system systems)
-      (with-accessors ((requirements requires)) system
-        ;; Find the required components that the system specified,
-        ;; if some of them were not found, an error will be signaled by the
-        ;; find-component function
-        ;; TODO: have a way to handle not finding components, like a special signal or something
-        (let ((found-required-components
-                (loop for required-comp in requirements
-                      collect
-                      (if (listp required-comp)
-                          ;; If the component is a list, then it must be in the
-                          ;; (:designator name) format and indicates some kind of special
-                          ;; component. Currently, only :optional is valid, but that might
-                          ;; change in the future.
-                          (destructuring-bind (designator name) required-comp
-                            (ecase designator
-                              (:optional (find-component object name :raise-error nil))))
-                          ;; Otherwise, look up the component and throw a error if it was not found
-                          (find-component object required-comp :raise-error t)))))
-          (run-system system found-required-components))))))
+  (with-accessors ((object-systems systems) (components components)) object
+    (with-accessors ((system-instances systems)) (current-app-state)
+      (dolist (system-class-name object-systems)
+
+        ;; Look up the system instance in the state system map; if it's there - use it,
+        ;; otherwise create a new one and put it into the map, symbol-macrolet ensures
+        ;; that the instance is put into the map
+        (symbol-macrolet ((system-instance (gethash system-class-name system-instances)))
+          (when (null system-instance)
+            (let ((new-instance (make-instance system-class-name)))
+              (setf system-instance new-instance)))
+          (with-accessors ((requirements requires)) system-instance
+            ;; Find the required components that the system specified,
+            ;; if some of them were not found, an error will be signaled by the
+            ;; find-component function
+            ;; TODO: have a way to handle not finding components, like a special signal or something
+            (let ((found-required-components
+                    (loop for required-comp in requirements
+                          collect
+                          (if (listp required-comp)
+                              ;; If the component is a list, then it must be in the
+                              ;; (:designator name) format and indicates some kind of special
+                              ;; component. Currently, only :optional is valid, but that might
+                              ;; change in the future.
+                              (destructuring-bind (designator name) required-comp
+                                (ecase designator
+                                  (:optional (find-component object name :raise-error nil))))
+                              ;; Otherwise, look up the component and throw a error if it was not found
+                              (find-component object required-comp :raise-error t)))))
+              (let ((*game-object* object))
+                ;; Declare *game-object* as special, so that if needed system could access it
+                ;; by doing the same thing
+                (declare (special *game-object*))
+
+                (run-system system-instance found-required-components)))))))))
 
 
 (defgeneric run-system (system found-required-components))

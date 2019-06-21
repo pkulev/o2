@@ -27,8 +27,9 @@
                          (+ player-x 400)
                          ;; On the left
                          (- player-x 400))))
+              (declare (special *game-object*))
               (add-child
-               (game-object system)
+               *game-object*
                (add-object (current-app-state)
                            (make-enemy (cons spawn-x 400) :bad-guy)))))))))
 

@@ -7,8 +7,13 @@
             :accessor running?)
    (actor :initform nil
           :accessor actor)
+
    (objects :initform (list)
             :reader objects)
+   (systems :initform (make-hash-table)
+            :accessor systems
+            :documentation "Instances of the systems that are used in the current state")
+
    (camera :initform (cons 0 0)
            :accessor camera)
 
