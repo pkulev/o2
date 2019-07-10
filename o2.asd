@@ -10,8 +10,9 @@
                :livesupport
                :chipmunk)
   :pathname "src"
-  :components ((:file "package")
-               (:file "o2")
+  :components ((:file "o2")
+               (:file "package")
+               (:file "components")
                (:file "gobject")
                (:file "ui")
                (:file "charge")
@@ -21,9 +22,8 @@
                (:file "renderer")
                (:file "state")
                (:file "ingame")
-               (:file "menu")
                (:file "application")
-               (:file "components"))
+               (:file "menu"))
   :build-operation "asdf:program-op"
   :build-pathname "../o2"
   :entry-point "o2:main")
