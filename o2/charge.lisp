@@ -11,7 +11,7 @@
            :reader sprite))
   (:default-initargs :radius 1 :damage-range '(0 . 0) :starting-velocity '(0d0 . 0d0)))
 
-(defclass weapon-charge-c (component)
+(defclass weapon-charge-c (o2/engine:component)
   ((charge-type :initarg :charge-type
                 :reader charge-type)
    (collision-type :initarg :collision-type)))
@@ -20,11 +20,12 @@
   (with-accessors ((sprite-name sprite) ; (mass mass)
                    (velocity starting-velocity))
       charge-type
-    (with-slots (space) (current-app-state)
-      (let* ((sprite-width (coerce (sprite-width sprite-name) 'double-float))
-             (sprite-height (coerce (sprite-height sprite-name) 'double-float))
-             (body (chipmunk:add space (chipmunk:make-kinematic-body)))
-             (shape (chipmunk:add space (chipmunk:make-box-shape body sprite-width sprite-height 0d0))))
+    (with-accessors ((physical-space o2/engine:physical-space))
+        (o2/engine:current-app-state)
+      (let* ((sprite-width (coerce (o2/engine:sprite-width sprite-name) 'double-float))
+             (sprite-height (coerce (o2/engine:sprite-height sprite-name) 'double-float))
+             (body (chipmunk:add physical-space (chipmunk:make-kinematic-body)))
+             (shape (chipmunk:add physical-space (chipmunk:make-box-shape body sprite-width sprite-height 0d0))))
 
         (setf (chipmunk:sensor shape) t)
         (setf (chipmunk:friction shape) 1d0)
@@ -41,14 +42,17 @@
                                           (coerce x 'double-float)
                                           (coerce y 'double-float))))
 
-        (let* ((charge-obj (make-game-object
-                               :components (transform-c
-                                            (physical-c :shape shape :rigid-body body)
-                                            (render-c :sprite sprite-name :render-priority 2)
-                                            (weapon-charge-c :charge-type charge-type
-                                                             :collision-type collision-type))
-                               :systems (physical-system render-system)))
-               (obj-id (id charge-obj)))
+        (let* ((charge-obj (o2/engine:make-game-object
+                            :components
+                            (o2/engine:transform-c
+                             (o2/engine:physical-c :shape shape :rigid-body body)
+                             (o2/engine:render-c :sprite sprite-name :render-priority 2)
+                             (weapon-charge-c :charge-type charge-type
+                                              :collision-type collision-type))
+                            :systems
+                            (o2/engine:physical-system
+                             o2/engine:render-system)))
+               (obj-id (o2/engine:id charge-obj)))
 
           ;; TODO: set collision category to collide with enemies
 

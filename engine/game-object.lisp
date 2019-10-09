@@ -1,4 +1,4 @@
-(in-package :o2)
+(in-package :o2/engine)
 
 (defclass transform ()
   ((x :initform 0

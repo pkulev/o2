@@ -1,4 +1,4 @@
-(in-package :o2)
+(in-package :o2/engine)
 
 (defclass renderer ()
   ((sdl2-renderer :initform (error "Renderer must be set")

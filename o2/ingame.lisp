@@ -1,66 +1,67 @@
 (in-package :o2)
 
-(defclass ingame-state (state)
-  ((running :initform nil
-            :accessor running?)
-   (space :initform nil)))
+(defclass ingame-state (o2/engine:state)
+  ())
 
-(defmethod init ((ingame ingame-state))
-  (with-slots (actor running space) ingame
-    (setf running t)
+(defmethod o2/engine:init ((ingame ingame-state))
+  (with-accessors ((actor o2/engine:actor)
+                   (running? o2/engine:running?)
+                   (physical-space o2/engine:physical-space)) ingame
+    (setf running? t)
 
     (let ((new-space (chipmunk:make-space))
           ;; Y is >0 because in SDL Y goes from top to bottom
           (gravity (chipmunk:make-cp-vect 0d0 (* 9.81d0 100))))
       (setf (chipmunk:gravity new-space) gravity)
-      (setf space new-space))
+      (setf physical-space new-space))
 
-    (init-collisions space)
+    (init-collisions physical-space)
 
     ;; FIXME: a better place for this?
-    (let ((ground (chipmunk:make-segment-shape (chipmunk:body space)
+    (let ((ground (chipmunk:make-segment-shape (chipmunk:body physical-space)
                                                (chipmunk:make-cp-vect -1280d0 550d0)
                                                (chipmunk:make-cp-vect 1280d0 550d0)
                                                0d0)))
       (setf (chipmunk:collision-type ground) :ground)
       (setf (chipmunk:shape-filter ground) (chipmunk:make-shape-filter '(:ground) :all))
       (setf (chipmunk:friction ground) 1d0)
-      (chipmunk:add space ground))
+      (chipmunk:add physical-space ground))
 
     ;; player
     (setf actor (make-james
                  :position '(50 . 400)
                  :sprite :player
                  :sitting-sprite :player-sitting
-                 :space space))
+                 :physical-space physical-space))
 
-    (add-object ingame
-                (make-game-object
-                    :components ((transform-c :position (cons -512 -385))
-                                 (render-c :sprite :background :render-priority 1))
-                    :systems (render-system)))
+    (o2/engine:add-object ingame
+                          (o2/engine:make-game-object
+                           :components ((o2/engine:transform-c :position (cons -512 -385))
+                                        (o2/engine:render-c :sprite :background :render-priority 1))
+                           :systems (o2/engine:render-system)))
 
-    (add-object ingame actor)
+    (o2/engine:add-object ingame actor)
 
     ;; Enemy spawner
-    (add-object ingame
-                (make-game-object
-                    :components (transform-c enemy-spawner-c)
-                    :systems (enemy-spawner-system)))
+    (o2/engine:add-object ingame
+                          (o2/engine:make-game-object
+                           :components (o2/engine:transform-c enemy-spawner-c)
+                           :systems (enemy-spawner-system)))
 
-    (add-object ingame (make-game-object
-                        :components (transform-c
-                                     (render-c :render-priority 2)
-                                     (text-widget-c
-                                      :data-getter
-                                      (lambda ()
-                                        (format nil "Score: ~A"
-                                                (score (current-app-state))))))
-                        :systems (text-widget-system)))
+    (o2/engine:add-object ingame (o2/engine:make-game-object
+                                  :components (o2/engine:transform-c
+                                               (o2/engine:render-c :render-priority 2)
+                                               (text-widget-c
+                                                :data-getter
+                                                (lambda ()
+                                                  (format nil "Score: ~A"
+                                                          (o2/engine:score (o2/engine:current-app-state))))))
+                                  :systems (text-widget-system)))
 
 
-    (add-object ingame (make-game-object :components (transform-c camera-tag)
-                                         :systems (camera-system)))
+    (o2/engine:add-object ingame (o2/engine:make-game-object
+                                  :components (o2/engine:transform-c o2/engine:camera-tag)
+                                  :systems (o2/engine:camera-system)))
 
     ;;(add-object ingame (make-instance 'text-widget
     ;;                                  :x 0 :y 0
@@ -68,7 +69,7 @@
     ;;                                  #'))
     ))
 
-(defun init-collisions (space)
+(defun init-collisions (physical-space)
   (chipmunk:clear-collision-types)
 
   (chipmunk:register-collision-type :player)
@@ -91,24 +92,24 @@
   ;; The ground, both players and enemies should collide with it
   (chipmunk:register-shape-filter-category :ground)
 
-  (chipmunk:define-collision-begin-callback bullet/health-collision (arbiter space data)
-    (declare (ignorable space data))
+  (chipmunk:define-collision-begin-callback bullet/health-collision (arbiter physical-space data)
+    (declare (ignorable physical-space data))
 
     (multiple-value-bind (bullet-shape ent-shape) (chipmunk:shapes arbiter)
       (let* ((bullet-id (cffi:pointer-address (autowrap:ptr (chipmunk:user-data bullet-shape))))
-             (bullet-obj (find-object-by-id (current-app-state) bullet-id))
+             (bullet-obj (o2/engine:find-object-by-id (o2/engine:current-app-state) bullet-id))
              (ent-id (cffi:pointer-address (autowrap:ptr (chipmunk:user-data ent-shape))))
-             (ent-obj (find-object-by-id (current-app-state) ent-id)))
+             (ent-obj (o2/engine:find-object-by-id (o2/engine:current-app-state) ent-id)))
         (when bullet-obj
-          (destroy bullet-obj)
+          (o2/engine:destroy bullet-obj)
 
           (when ent-obj
-            (let* ((invinc-c (find-component ent-obj 'invincibility-c :raise-error nil))
-                   (health-c (find-component ent-obj 'health-c))
+            (let* ((invinc-c (o2/engine:find-component ent-obj 'invincibility-c :raise-error nil))
+                   (health-c (o2/engine:find-component ent-obj 'health-c))
                    (damage-range
                      (damage-range
                       (charge-type
-                       (find-component bullet-obj 'weapon-charge-c))))
+                       (o2/engine:find-component bullet-obj 'weapon-charge-c))))
                    (damage (+ (car damage-range) (random (cdr damage-range)))))
 
               (block hurting-block
@@ -126,22 +127,22 @@
                   (setf health (- health damage)))))))))
 
     1)
-  (chipmunk:with-collision-handler-for (handler (space :player-bullet :enemy))
+  (chipmunk:with-collision-handler-for (handler (physical-space :player-bullet :enemy))
     (setf (chipmunk:begin-collision-fun handler) 'bullet/health-collision))
-  (chipmunk:with-collision-handler-for (handler (space :enemy-bullet :player))
+  (chipmunk:with-collision-handler-for (handler (physical-space :enemy-bullet :player))
     (setf (chipmunk:begin-collision-fun handler) 'bullet/health-collision)))
 
-(defmethod update ((state ingame-state) &key dt &allow-other-keys)
+(defmethod o2/engine:update ((state ingame-state) &key dt &allow-other-keys)
   (declare (ignorable dt))
 
-  (with-slots (space) state
+  (with-accessors ((physical-space o2/engine:physical-space)) state
     ;; Chipmunk counts time in seconds, SDL - in milliseconds
-    (chipmunk:step space (coerce (/ +delay+ 1000) 'double-float))
+    (chipmunk:step physical-space (coerce (/ o2/engine:+delay+ 1000) 'double-float))
 
-    (when (not (null *physical-component-cleanups*))
+    (when (not (null o2/engine:*physical-component-cleanups*))
       ;; Run physics components cleanups
-      (dolist (cleanup *physical-component-cleanups*)
+      (dolist (cleanup o2/engine:*physical-component-cleanups*)
         (funcall cleanup))
-      (setf *physical-component-cleanups* '())))
+      (setf o2/engine:*physical-component-cleanups* '())))
 
   (when (next-method-p) (call-next-method)))

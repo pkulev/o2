@@ -1,12 +1,12 @@
 (in-package :o2)
 
-(defclass weapon (game-object)
+(defclass weapon (o2/engine:game-object)
   ;; FIXME: Move the sprite to a component
   ((sprite :initform nil
            :initarg :sprite)
    (ammo-in-mag :initform 0
-             :initarg :ammo-in-mag
-             :accessor ammo-in-mag)
+                :initarg :ammo-in-mag
+                :accessor ammo-in-mag)
    (mag-capacity :initform 0
                  :initarg :mag-capacity
                  :accessor mag-capacity)
@@ -74,34 +74,14 @@
         (setf ammo (- ammo amount))))))
 
 
-(defclass shooter-c (component)
-  ((shoot? :accessor shoot?
-           :initform nil)
-   (reload? :accessor reload?
-            :initform nil)
-   (weapons :accessor weapons
-            :initarg :weapons)
-   (current-weapon :accessor current-weapon
-                   :initarg :current-weapon)
-   (bullet-collision-type :accessor bullet-collision-type
-                          :initarg :bullet-collision-type
-                          :documentation "What collision type should be used for callbacks")
-   (bullet-shape-filter :accessor bullet-shape-filter
-                        :initarg :bullet-shape-filter
-                        :documentation "What category should be used for collision checks"))
-  (:default-initargs :weapons (list)))
-
-(defclass shooter-system (system)
-  ((requires :initform '(shooter-c transform-c render-c))))
-
-(defmethod run-system ((system shooter-system) found-components)
+(defmethod o2/engine:run-system ((system o2/engine:shooter-system) found-components)
   (destructuring-bind (shoot-comp tr render-c) found-components
-    (with-accessors ((shoot? shoot?)
-                     (reload? reload?)
-                     (weapons weapons)
-                     (current-weapon current-weapon)
-                     (bullet-collision-type bullet-collision-type)
-                     (bullet-shape-filter bullet-shape-filter))
+    (with-accessors ((shoot? o2/engine:shoot?)
+                     (reload? o2/engine:reload?)
+                     (weapons o2/engine:weapons)
+                     (current-weapon o2/engine:current-weapon)
+                     (bullet-collision-type o2/engine:bullet-collision-type)
+                     (bullet-shape-filter o2/engine:bullet-shape-filter))
         shoot-comp
 
       (when reload?
@@ -141,22 +121,23 @@
                     (setf chambered? t)
                     (setf ammo-in-mag (1- ammo-in-mag))))
 
-              (with-accessors ((par parent)) tr
-                (with-accessors ((flip flip) (sprite sprite)) render-c
-                  (let* ((pos (position tr))
+              (with-accessors ((par o2/engine:parent)) tr
+                (with-accessors ((flip o2/engine:flip)
+                                 (sprite o2/engine:sprite)) render-c
+                  (let* ((pos (o2/engine:position tr))
                          (spawn-pos
                            (cons
                             (ecase flip
-                              (:none (+ (sprite-width sprite) (car pos)))
+                              (:none (+ (o2/engine:sprite-width sprite) (car pos)))
                               (:horizontal (car pos)))
                             (cdr pos))))
 
-                    (add-object (current-app-state)
-                                (make-charge-object (current-charge the-weapon)
-                                                    bullet-collision-type
-                                                    bullet-shape-filter
-                                                    spawn-pos
-                                                    flip))))))))))))
+                    (o2/engine:add-object (o2/engine:current-app-state)
+                                          (make-charge-object (current-charge the-weapon)
+                                                              bullet-collision-type
+                                                              bullet-shape-filter
+                                                              spawn-pos
+                                                              flip))))))))))))
 
 (defclass G17 (weapon) ()
   (:default-initargs :current-charge *9x19*))

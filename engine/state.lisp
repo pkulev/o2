@@ -1,4 +1,4 @@
-(in-package :o2)
+(in-package :o2/engine)
 
 (defclass state ()
   ((application :initform (error "Application must be set.")
@@ -17,9 +17,13 @@
    (camera :initform (cons 0 0)
            :accessor camera)
 
-   ;; FIXME: is this really the best place for it?
+   ;; FIXME: score must be game-side component attached to some GameController
    (score :initform 0
-          :accessor score)))
+          :accessor score)
+
+   ;; FIXME: physical space must not be part of the state
+   (physical-space :initform nil
+                   :accessor physical-space)))
 
 (defgeneric init (state))
 (defgeneric process-input (state direction keysym))
