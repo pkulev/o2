@@ -1,3 +1,7 @@
+#| Application representation.
+
+To write application using this engine you should subclass `application'.
+|#
 (in-package :o2/engine)
 
 (defparameter +delay+ (/ 1000.0 30.0) "FPS")
@@ -14,24 +18,18 @@
              :initarg :renderer)))
 
 (defmethod initialize-instance :after ((app application) &key &allow-other-keys)
+  "Store initialized application object in global variable."
   (setf *application* app))
 
 (defun current-app-state ()
+  "Return current state of the application."
   (current-state *application*))
 
-(defun deregister-state (app state-name)
-  (with-slots (states) app
-    (let ((maybe-st (gethash state-name states)))
-      (when maybe-st
-        ;; FIXME: cleanup? this breaks stuff somehow, because
-        ;;        removing the body from the space twice is not allowed
-        ;; (cleanup maybe-st)
-        (setf (gethash state-name states) nil)))))
-
 (defun register-state (app state)
+  "Register new STATE in the application (APP). State will be instantiated."
   (with-slots ((ren renderer) states current-state) app
-    (if (gethash state states)
-        (error "State ~a is already registered." state))
+    (when (gethash state states)
+      (error "State ~a is already registered." state))
 
     (let* ((state-object (make-instance state :application app))
            (previous-state current-state))
@@ -46,6 +44,15 @@
       (init state-object)
 
       (when previous-state (setf current-state previous-state)))))
+
+(defun deregister-state (app state-name)
+  (with-slots (states) app
+    (let ((maybe-st (gethash state-name states)))
+      (when maybe-st
+        ;; FIXME: cleanup? this breaks stuff somehow, because
+        ;;        removing the body from the space twice is not allowed
+        ;; (cleanup maybe-st)
+        (setf (gethash state-name states) nil)))))
 
 (defun init-state (app &optional state-name)
   "Initialize state STATE-NAME if provided, current state otherwise."
@@ -66,12 +73,14 @@
       (error "State ~a is not registered." state-name)))
 
 (defmacro continuable (&body body)
-  "A macro to disable livesupport when in SLIME"
+  "A macro to disable livesupport when in SLIME/SLY."
   #+slynk
   `(livesupport:continuable ,@body)
   #-slynk
   `(progn ,@body))
 
-(defmethod start (application))
+(defgeneric start (application)
+  (:documentation "Start application."))
 
-(defmethod stop (application))
+(defgeneric stop (application)
+  (:documentation "Stop application."))
