@@ -39,6 +39,7 @@
                :chipmunk)
   :pathname "engine"
   :components ((:file "package")
+               (:file "utils")
                (:file "events")
                (:file "game-object")
                (:file "application")

@@ -72,13 +72,6 @@ To write application using this engine you should subclass `application'.
   (or (gethash state-name (states app) nil)
       (error "State ~a is not registered." state-name)))
 
-(defmacro continuable (&body body)
-  "A macro to disable livesupport when in SLIME/SLY."
-  #+slynk
-  `(livesupport:continuable ,@body)
-  #-slynk
-  `(progn ,@body))
-
 (defgeneric start (application)
   (:documentation "Start application."))
 
