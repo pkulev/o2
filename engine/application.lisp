@@ -8,6 +8,10 @@ To write application using this engine you should subclass `application'.
 
 (defvar *application* nil "Instance of the current application.")
 
+(defun get-current-application ()
+  "Return an instance of current application."
+  *application*)
+
 
 (defclass application ()
   ((frame-ms :initarg :frame-ms

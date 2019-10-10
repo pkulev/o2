@@ -73,12 +73,13 @@
               (sdl2:with-event-loop (:method :poll)
                 (:restart-current-state ()
                                         ;; FIXME: ugly
-                                        (let ((name (class-name (class-of (o2/engine:current-app-state)))))
-                                          (o2/engine:deregister-state o2/engine:*application* name)
-                                          (o2/engine:register-state o2/engine:*application* name)
-                                          (o2/engine:set-state o2/engine:*application* name)))
+                                        (let ((name (class-name (class-of (o2/engine:current-app-state))))
+                                              (app (o2/engine:get-current-application)))
+                                          (o2/engine:deregister-state app name)
+                                          (o2/engine:register-state app name)
+                                          (o2/engine:set-state app name)))
                 (:change-current-state (:user-data state-name)
-                                       (o2/engine:set-state o2/engine:*application* state-name))
+                                       (o2/engine:set-state (o2/engine:get-current-application) state-name))
                 (:idle ()
                        (format t "~%starting frame ~%")
                        (setf current-frame (sdl2:get-ticks))
@@ -105,9 +106,10 @@
                          (when (< current-speed o2/engine:+delay+)
                            (sdl2:delay (round (- o2/engine:+delay+ current-speed))))))
                 (:quit ()
+                       (-log "Got :quit event, stopping the application")
                        ;; Clean up states on shutdown
                        (loop for state being the
-                             hash-values of (o2/engine:states o2/engine:*application*)
+                             hash-values of (o2/engine:states (o2/engine:get-current-application))
                              do (o2/engine:cleanup state))
                        (when (not (null o2/engine:*physical-component-cleanups*))
                          ;; Run physics components cleanups
@@ -119,7 +121,7 @@
                        ;; the space. Maybe some kind of cleanup queue for all objects, that runs all
                        ;; cleanups at the end of the step, so that the program arives here,
                        ;; there would be nothing that depends on the physics space
-                       (let ((ingame-state (gethash :ingame (o2/engine:states o2/engine:*application*))))
+                       (let ((ingame-state (gethash :ingame (o2/engine:states (o2/engine:get-current-application)))))
                          (when ingame-state
                            (with-slots (physical-space) ingame-state
                              (chipmunk:free-space physical-space))))
