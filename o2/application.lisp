@@ -44,8 +44,8 @@
 
           ;; TODO: move to event registration -->
           (-log "~a: registering event types" app)
-          (o2/engine:add-event-type :restart-current-state)
-          (o2/engine:add-event-type :change-current-state)
+          (o2/engine:register-event-type :restart-current-state)
+          (o2/engine:register-event-type :change-current-state)
           ;; TODO: move to event registration <--
 
           ;; TODO: move to smart asset loading -->

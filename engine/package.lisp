@@ -5,7 +5,6 @@
   (:export :application  ; application API
            :actor
            :*application*
-           :add-event-type
            :current-app-state
            :current-state
            :set-current-renderer
@@ -14,6 +13,9 @@
            :states
            :cleanup
            :continuable
+
+           ;; events
+           :register-event-type
            :push-event
 
            ;; state API

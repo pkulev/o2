@@ -72,12 +72,6 @@
   #-slynk
   `(progn ,@body))
 
-(defun add-event-type (type)
-  (sdl2:register-user-event-type type))
-
-(defun push-event (event &optional user-data)
-  (sdl2:push-user-event event user-data))
-
 (defmethod start (application))
 
 (defmethod stop (application))
