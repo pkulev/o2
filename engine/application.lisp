@@ -10,12 +10,26 @@ To write application using this engine you should subclass `application'.
 
 
 (defclass application ()
-  ((states :initform (make-hash-table)
-           :reader states)
-   (current-state :initform nil
-                  :reader current-state)
-   (renderer :initform nil
-             :initarg :renderer)))
+  ((frame-ms :initarg :frame-ms
+             :accessor frame-ms
+             :documentation "Desired time (ms) we can spend in each frame.")
+
+   (states :initarg :states
+           :reader states
+           :documentation "All states of an application.")
+
+   (current-state :initarg :current-state
+                  :reader current-state
+                  :documentation "Link to current state (object).")
+
+   ;; TODO: renderer must not be set by hand from client code
+   (renderer :initarg :renderer
+             :documentation "Link to renderer object."))
+
+  (:default-initargs
+   :frame-ms (/ 1000.0 30.0)
+   :states (make-hash-table)
+   :current-state nil))
 
 (defmethod initialize-instance :after ((app application) &key &allow-other-keys)
   "Store initialized application object in global variable."
@@ -54,6 +68,7 @@ To write application using this engine you should subclass `application'.
         ;; (cleanup maybe-st)
         (setf (gethash state-name states) nil)))))
 
+;; TODO: unused
 (defun init-state (app &optional state-name)
   "Initialize state STATE-NAME if provided, current state otherwise."
   (let ((state (if state-name (get-state app state-name) (current-state app)))
