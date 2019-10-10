@@ -92,13 +92,14 @@
   ;; Delay cleanup to the time after the physics step
   (push
    (lambda ()
-     (with-accessors ((body rigid-body) (shape shape)) comp
-       (with-slots (physical-space) (current-app-state)
-         (chipmunk:remove physical-space body)
-         (chipmunk:remove physical-space shape))
+     (with-slots (physical-space) (current-app-state)
+       (when physical-space
+         (with-accessors ((body rigid-body) (shape shape)) comp
+           (chipmunk:remove physical-space body)
+           (chipmunk:remove physical-space shape)
 
-       (chipmunk:free-shape shape)
-       (chipmunk:free-body body)))
+           (chipmunk:free-shape shape)
+           (chipmunk:free-body body)))))
    *physical-component-cleanups*))
 
 
