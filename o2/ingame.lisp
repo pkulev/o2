@@ -135,6 +135,9 @@
 (defmethod o2/engine:update ((state ingame-state) &key dt &allow-other-keys)
   (declare (ignorable dt))
 
+  (when (sdl2:keyboard-state-p :scancode-escape)
+    (o2/engine:push-event :change-current-state 'main-menu-state))
+
   (with-accessors ((physical-space o2/engine:physical-space)) state
     ;; Chipmunk counts time in seconds, SDL - in milliseconds
     (let ((frame-sec (/ (o2/engine:frame-ms (o2/engine:get-current-application)) 1000)))
