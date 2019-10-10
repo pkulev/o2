@@ -4,7 +4,6 @@ To write application using this engine you should subclass `application'.
 |#
 (in-package :o2/engine)
 
-(defparameter +delay+ (/ 1000.0 30.0) "FPS")
 
 (defvar *application* nil "Instance of the current application.")
 

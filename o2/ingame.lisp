@@ -137,7 +137,8 @@
 
   (with-accessors ((physical-space o2/engine:physical-space)) state
     ;; Chipmunk counts time in seconds, SDL - in milliseconds
-    (chipmunk:step physical-space (coerce (/ o2/engine:+delay+ 1000) 'double-float))
+    (let ((frame-sec (/ (o2/engine:frame-ms (o2/engine:get-current-application)) 1000)))
+      (chipmunk:step physical-space (coerce frame-sec 'double-float)))
 
     (when (not (null o2/engine:*physical-component-cleanups*))
       ;; Run physics components cleanups

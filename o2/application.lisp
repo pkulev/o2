@@ -67,7 +67,8 @@
           (o2/engine:register-state app 'ingame-state)
           (o2/engine:set-state app 'main-menu-state)
 
-          (with-slots ((state o2/engine:current-state)) app
+          (with-accessors ((frame-ms o2/engine:frame-ms)
+                           (state o2/engine:current-state)) app
             (format t "~a: current state: ~a" app state)
             (o2/engine:continuable
               (sdl2:with-event-loop (:method :poll)
@@ -103,8 +104,8 @@
                        (sdl2:render-present ren)
                        (let ((current-speed (- (sdl2:get-ticks)
                                                current-frame)))
-                         (when (< current-speed o2/engine:+delay+)
-                           (sdl2:delay (round (- o2/engine:+delay+ current-speed))))))
+                         (when (< current-speed frame-ms)
+                           (sdl2:delay (round (- frame-ms current-speed))))))
                 (:quit ()
                        (-log "Got :quit event, stopping the application")
                        ;; Clean up states on shutdown
