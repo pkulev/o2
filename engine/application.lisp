@@ -44,7 +44,7 @@ To write application using this engine you should subclass `application'.
 
 (defun register-state (app state)
   "Register new STATE in the application (APP). State will be instantiated."
-  (with-slots ((ren renderer) states current-state) app
+  (with-slots (states current-state) app
     (when (gethash state states)
       (error "State ~a is already registered." state))
 
