@@ -131,5 +131,5 @@
                      :dimensions (cons button-w button-h)
                      :choice-number 1
                      :text "Exit"
-                     :action (lambda () (o2/engine:push-event :restart-current-state))))
+                     :action #'sdl2:push-quit-event))
        :systems (menu-choice-system))))))
