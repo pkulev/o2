@@ -36,7 +36,8 @@
                :sdl2-ttf
                #+slynk
                :livesupport
-               :chipmunk)
+               :chipmunk
+               :log4cl)
   :pathname "engine"
   :components ((:file "package")
                (:file "utils")
