@@ -14,20 +14,14 @@
   (merge-pathnames file-name (merge-pathnames #p"fonts/" (res))))
 ;; TODO: move to resource management <--
 
-
-;; TODO: replace with logging
-(defun -log (msg &rest args)
-  (format t (concatenate 'string msg "~%") args))
-
-
 (defclass application (o2/engine:application)
   ())
 
 (defun make-application ()
   (make-instance 'application))
 
-(defmethod start ((app application))
-  (-log "~a: starting application" app)
+(defmethod o2/engine:start ((app application))
+
   (sdl2-image:init '(:png))
   (sdl2-ttf:init)
   (sdl2:with-init (:video)
@@ -38,18 +32,18 @@
         (let* ((renderer (make-instance 'o2/engine:renderer :renderer ren))
                current-frame)
 
-          (-log "~a: initializing renderer" app)
           (o2/engine:set-current-renderer renderer)
           (setf (slot-value app 'o2/engine:renderer) renderer)
 
           ;; TODO: move to event registration -->
-          (-log "~a: registering event types" app)
+          (log:debug "registering event types...")
           (o2/engine:register-event-type :restart-current-state)
           (o2/engine:register-event-type :change-current-state)
+          (log:debug "done")
           ;; TODO: move to event registration <--
 
           ;; TODO: move to smart asset loading -->
-          (-log "~a: loading assets" app)
+          (log:debug "loading assets...")
           (o2/engine:add-sprite :logo (res/gfx "logo.png"))
           (o2/engine:add-sprite :background (res/gfx "background-placeholder.png"))
           (o2/engine:add-sprite :player (res/gfx "player-pistol-firing.png"))
@@ -60,16 +54,17 @@
 
           (o2/engine:add-font :ubuntu (res/fonts "Ubuntu-R.ttf") :font-size 16)
           (o2/engine:add-font :ubuntu-large (res/fonts "Ubuntu-R.ttf") :font-size 36)
+          (log:debug "done")
           ;; TODO: move to smart asset loading <--
 
-          (-log "~a: registering states" app)
+          (log:debug "registering states...")
           (o2/engine:register-state app 'main-menu-state)
           (o2/engine:register-state app 'ingame-state)
           (o2/engine:set-state app 'main-menu-state)
+          (log:debug "done")
 
           (with-accessors ((frame-ms o2/engine:frame-ms)
                            (state o2/engine:current-state)) app
-            (format t "~a: current state: ~a" app state)
             (o2/engine:continuable
               (sdl2:with-event-loop (:method :poll)
                 (:restart-current-state ()
@@ -82,7 +77,7 @@
                 (:change-current-state (:user-data state-name)
                                        (o2/engine:set-state (o2/engine:get-current-application) state-name))
                 (:idle ()
-                       (format t "~%starting frame ~%")
+                       (log:debug "frame -->")
                        (setf current-frame (sdl2:get-ticks))
                        ;; TODO move out to :before and :after render
 
@@ -93,11 +88,9 @@
 
                        ;; FIXME: this is only called to make a physic world step in ingame,
                        ;;        do something proper here
-                       (format t "updating all objects ~%")
                        (o2/engine:update state)
                        (with-accessors ((objects o2/engine:objects)) state
-                         (format t "running all systems ~%")
-                         (format t "objects: ~a~%" objects)
+                         (log:debug "running all systems")
                          (dolist (object objects)
                            (o2/engine:run-systems object)))
 
@@ -105,9 +98,10 @@
                        (let ((current-speed (- (sdl2:get-ticks)
                                                current-frame)))
                          (when (< current-speed frame-ms)
-                           (sdl2:delay (round (- frame-ms current-speed))))))
+                           (sdl2:delay (round (- frame-ms current-speed)))))
+                       (log:debug "frame <--"))
                 (:quit ()
-                       (-log "Got :quit event, stopping the application")
+                       (log:debug "Got" :quit "event, stopping the application")
                        ;; Clean up states on shutdown
                        (loop for state being the
                              hash-values of (o2/engine:states (o2/engine:get-current-application))

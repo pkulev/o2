@@ -12,6 +12,8 @@
 (defvar *renderer* nil "Current renderer.")
 
 (defun set-current-renderer (renderer)
+  "Set RENDERER as current."
+  (log:debug "setting" renderer "as current renderer")
   (setf *renderer* renderer))
 
 (defun load-texture (renderer path-to-file)

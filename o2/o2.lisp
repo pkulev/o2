@@ -12,4 +12,4 @@
     "Project root absolute path.")
 
   (let ((o2 (make-application)))
-    (start o2)))
+    (o2/engine:start o2)))

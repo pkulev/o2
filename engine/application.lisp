@@ -48,6 +48,8 @@ To write application using this engine you should subclass `application'.
     (when (gethash state states)
       (error "State ~a is already registered." state))
 
+    (log:info "registering state" state)
+
     (let* ((state-object (make-instance state :application app))
            (previous-state current-state))
 
@@ -63,9 +65,13 @@ To write application using this engine you should subclass `application'.
       (when previous-state (setf current-state previous-state)))))
 
 (defun deregister-state (app state-name)
+  "Deregister state STATE-NAME from APP."
   (with-slots (states) app
     (let ((maybe-st (gethash state-name states)))
       (when maybe-st
+
+        (log:info "deregistering state" state)
+
         ;; FIXME: cleanup? this breaks stuff somehow, because
         ;;        removing the body from the space twice is not allowed
         ;; (cleanup maybe-st)
@@ -84,6 +90,7 @@ To write application using this engine you should subclass `application'.
 (defun set-state (app state-name)
   "Set state STATE-NAME as current for APP."
   (let ((state (get-state app state-name)))
+    (log:debug "setting" state "for" app "as current")
     (setf (slot-value app 'current-state) state)))
 
 (defun get-state (app state-name)
@@ -93,5 +100,11 @@ To write application using this engine you should subclass `application'.
 (defgeneric start (application)
   (:documentation "Start application."))
 
+(defmethod start :before ((app application))
+  (log:info "starting the application"))
+
 (defgeneric stop (application)
   (:documentation "Stop application."))
+
+(defmethod stop :before ((app application))
+  (log:info "stopping the application"))
