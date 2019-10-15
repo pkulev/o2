@@ -42,6 +42,7 @@
   :components ((:file "package")
                (:file "utils")
                (:file "events")
+               (:file "project")
                (:file "game-object")
                (:file "application")
                (:file "renderer")
