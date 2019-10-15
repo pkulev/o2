@@ -43,6 +43,7 @@
                (:file "utils")
                (:file "events")
                (:file "project")
+               (:file "assets")
                (:file "game-object")
                (:file "application")
                (:file "renderer")

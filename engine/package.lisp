@@ -23,6 +23,11 @@
    :register-event-type
    :push-event
 
+   ;; asset
+   :asset
+   :sprite
+   :font
+
    ;; state API
    :add-object
    :actor
