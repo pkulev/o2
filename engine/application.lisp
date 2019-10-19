@@ -70,7 +70,7 @@ To write application using this engine you should subclass `application'.
     (let ((maybe-st (gethash state-name states)))
       (when maybe-st
 
-        (log:info "deregistering state" state)
+        (log:info "deregistering state" state-name)
 
         ;; FIXME: cleanup? this breaks stuff somehow, because
         ;;        removing the body from the space twice is not allowed
