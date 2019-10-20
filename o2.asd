@@ -50,3 +50,12 @@
                (:file "state")
                (:file "component")
                (:file "system")))
+
+(asdf:defsystem #:o2/engine/examples
+  :description "O2 game engine usage examples."
+  :author "Pavel Kulyov <kulyov.pavel@gmail.com>"
+  :license "MIT"
+  :depends-on (:o2/engine)
+  :pathname "examples"
+  :components ((:file "package")
+               (:file "simple")))
