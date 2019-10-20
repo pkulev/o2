@@ -1,13 +1,5 @@
 (in-package :o2/engine)
 
-(defclass transform ()
-  ((x :initform 0
-      :initarg :x
-      :accessor x)
-   (y :initform 0
-      :initarg :y
-      :accessor y)))
-
 (defparameter *game-object-next-id* 0)
 
 (defclass game-object ()
@@ -42,16 +34,6 @@
     `(make-instance 'game-object
                     :components (list ,@(lists-to-makes components))
                     :systems ',systems)))
-
-(defmethod get-rect ((object game-object))
-  (with-slots (x y sprite) object
-    (if sprite
-        (progn
-          (let* ((texture (get-sprite-texture sprite))
-                 (w (sdl2:texture-width texture))
-                 (h (sdl2:texture-height texture)))
-            (sdl2:make-rect x y w h)))
-        (sdl2:make-rect x y 0 0))))
 
 (defmethod add-child ((object game-object) (child game-object))
   (let ((tr (find-component object 'transform-c))
