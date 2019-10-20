@@ -1,31 +1,49 @@
 #+TITLE: Operation "Operation"
 
+[[logo][file:https://github.com/pkulev/o2/blob/master/res/gfx/logo.png]]
+
 * Dependencies
-  You need following libraries installed:
+  You will need the following libraries installed:
   - sdl2
   - sdl2-image
   - sdl2-ttf
   - libffi
+  - chipmunk
 
-* Installation
-  You need installed and working [[https://www.quicklisp.org][quicklisp]] for it.
+* Installation for development
+  You will need installed and working [[https://www.quicklisp.org][quicklisp]] for it.
+  - Clone our patched cl-sdl2-ttf wrapper:
+    #+begin_src sh
+      git clone https://github.com/pkulev/cl-sdl2-ttf.git ~/quicklisp/local-projects/cl-sdl2-ttf
+    #+end_src
+
+  - Clone our chipmunk wrapper:
+    #+begin_src sh
+      git clone https://github.com/vaartis/cl-chipmunk.git ~/quicklisp/local-projects/cl-chipmunk
+    #+end_src
 
   - Let quicklisp know about =o2= system:
-  #+BEGIN_SRC sh
-    $ # clone directly to local-projects
-    $ git clone https://github.com/pkulev/o2.git ~/quicklisp/local-projects/o2
-    $ # or create symlink
-    $ ln -s /path/to/o2 ~/quicklisp/local-projects/o2
-  #+END_SRC
+    #+begin_src sh
+      # clone directly to local-projects
+      git clone https://github.com/pkulev/o2.git ~/quicklisp/local-projects/o2
+      # or create symlink
+      ln -s /path/to/o2 ~/quicklisp/local-projects/o2
+    #+end_src
 
   - Load system into the running REPL and run the game:
-  #+BEGIN_SRC common-lisp
-    (ql:quickload :o2)
-    (o2:main)  ; run the game
-  #+END_SRC
+    #+begin_src common-lisp
+      (ql:quickload :o2)
+      (o2:main)  ; run the game
+    #+end_src
+
+* Running examples
+  #+begin_src common-lisp
+    (ql:quickload :o2/engine/examples)
+    (o2/engine/examples::main)
+  #+end_src
 
 * Licensing
 
   The source code is provided under the MIT license, you can find a copy in [[file:CC-BY-SA-4.0][LICENSE]].
 
-  The assets are provided under the CC-BY-SA-4.0 license, you can find a copy in [[file:CC-BY-SA-4.0][CC-BY-SA-4.0]]
+  The assets are provided under the CC-BY-SA-4.0 license, you can find a copy in [[file:CC-BY-SA-4.0][CC-BY-SA-4.0]].
