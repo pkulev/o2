@@ -1,6 +1,8 @@
 #| Application representation.
 
 To write application using this engine you should subclass `application'.
+Application operates hashmap of states. State represents bucket of game objects.
+State can be used for level representation for example.
 |#
 (in-package :o2/engine)
 
@@ -105,6 +107,10 @@ State will be instantiated and returned as result."
 
 (defmethod start :before ((app application))
   (log:info "starting the application"))
+
+(defmethod start ((app application))
+  ;; TODO: we should do something useful here, not in the client code
+  t)
 
 (defgeneric stop (application)
   (:documentation "Stop application."))
