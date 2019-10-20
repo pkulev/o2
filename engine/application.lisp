@@ -43,7 +43,9 @@ To write application using this engine you should subclass `application'.
   (current-state *application*))
 
 (defun register-state (app state)
-  "Register new STATE in the application (APP). State will be instantiated."
+  "Register new STATE in the application (APP).
+
+State will be instantiated and returned as result."
   (with-slots (states current-state) app
     (when (gethash state states)
       (error "State ~a is already registered." state))
@@ -62,7 +64,8 @@ To write application using this engine you should subclass `application'.
 
       (init state-object)
 
-      (when previous-state (setf current-state previous-state)))))
+      (when previous-state (setf current-state previous-state))
+      state-object)))
 
 (defun deregister-state (app state-name)
   "Deregister state STATE-NAME from APP."
