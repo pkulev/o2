@@ -32,8 +32,8 @@
 
   - Load system into the running REPL and run the game:
     #+begin_src common-lisp
-      (ql:quickload :o2)
-      (o2:main)  ; run the game
+      (ql:quickload :o2-game)
+      (o2-game:main)  ; run the game
     #+end_src
 
 * Running examples

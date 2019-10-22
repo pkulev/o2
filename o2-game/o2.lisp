@@ -1,4 +1,4 @@
-(in-package :o2)
+(in-package :o2-game)
 
 (defparameter *core-is-root* nil
   "Should the image file be the root of the project,
@@ -8,7 +8,7 @@
   (defparameter +root+
     (if *core-is-root*
         *default-pathname-defaults*
-        (asdf:system-source-directory :o2))
+        (asdf:system-source-directory :o2-game))
     "Project root absolute path.")
 
   (let ((o2 (make-application)))

@@ -1,4 +1,4 @@
-(in-package :o2)
+(in-package :o2-game)
 
 (defclass main-menu-state (o2/engine:state)
   ((choice :initform 0

@@ -1,4 +1,4 @@
-(in-package :o2)
+(in-package :o2-game)
 
 ;; TODO: move to resource management -->
 (defun res ()

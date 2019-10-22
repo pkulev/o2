@@ -1,4 +1,4 @@
-(in-package :o2)
+(in-package :o2-game)
 
 (defclass ingame-state (o2/engine:state)
   ())

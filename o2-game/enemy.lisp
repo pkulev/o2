@@ -1,4 +1,4 @@
-(in-package :o2)
+(in-package :o2-game)
 
 (defclass enemy-spawner-c (o2/engine:component)
   ((last-enemy-spawned :initarg :last-enemy-spawned

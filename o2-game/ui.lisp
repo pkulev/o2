@@ -1,4 +1,4 @@
-(in-package :o2)
+(in-package :o2-game)
 
 (defclass text-widget-c (o2/engine:component)
   ((data-getter :initarg :data-getter

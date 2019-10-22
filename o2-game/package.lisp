@@ -1,5 +1,5 @@
-(defpackage :o2
-  (:documentation "O2 main package.")
+(defpackage #:o2-game
+  (:documentation "O2 game main package.")
   (:use :cl)
   (:export #:main
            #:*core-is-root*)

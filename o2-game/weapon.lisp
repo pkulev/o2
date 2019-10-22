@@ -1,4 +1,4 @@
-(in-package :o2)
+(in-package :o2-game)
 
 (defclass weapon (o2/engine:game-object)
   ;; FIXME: Move the sprite to a component

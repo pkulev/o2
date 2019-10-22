@@ -1,4 +1,4 @@
-(in-package :o2)
+(in-package :o2-game)
 
 (defclass health-c (o2/engine:component)
   ((max-health :initarg :max-health

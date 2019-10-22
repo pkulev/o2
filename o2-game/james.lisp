@@ -1,4 +1,4 @@
-(in-package :o2)
+(in-package :o2-game)
 
 (defun make-james (&key (position (cons 0 0)) sprite sitting-sprite physical-space)
   (let* ((dfloat-width (coerce (o2/engine:sprite-width :player) 'double-float))

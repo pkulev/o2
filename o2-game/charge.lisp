@@ -1,4 +1,4 @@
-(in-package :o2)
+(in-package :o2-game)
 
 (defclass weapon-charge-type ()
   ((radius :initarg :radius
