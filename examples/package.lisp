@@ -1,3 +1,3 @@
-(defpackage #:o2/engine/examples
+(defpackage #:o2/examples
   (:documentation "O2 game engine usage examples.")
   (:use :cl))

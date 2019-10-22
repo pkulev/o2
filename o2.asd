@@ -1,4 +1,4 @@
-(asdf:defsystem #:o2
+(asdf:defsystem #:o2-game
   :description "Operation 'Operation' is 2D shooter about war behind enemy lines."
   :author "Pavel Kulyov <kulyov.pavel@gmail.com>, Ekaterina Vaartis <vaartis@cock.li>"
   :license "MIT"
@@ -9,8 +9,8 @@
                #+slynk
                :livesupport
                :chipmunk
-               :o2/engine)
-  :pathname "o2"
+               :o2)
+  :pathname "o2-game"
   :components ((:file "package")
                (:file "o2")
                (:file "ui")
@@ -24,10 +24,10 @@
                (:file "application"))
 
   :build-operation "asdf:program-op"
-  :build-pathname "../o2"
-  :entry-point "o2:main")
+  :build-pathname "../o2-game"
+  :entry-point "o2-game:main")
 
-(asdf:defsystem #:o2/engine
+(asdf:defsystem #:o2
   :description "O2 game engine."
   :author "Pavel Kulyov <kulyov.pavel@gmail.com>, Ekaterina Vaartis <vaartis@cock.li>"
   :license "MIT"
@@ -38,7 +38,7 @@
                :livesupport
                :chipmunk
                :log4cl)
-  :pathname "engine"
+  :pathname "o2"
   :components ((:file "package")
                (:file "utils")
                (:file "events")
@@ -51,11 +51,11 @@
                (:file "component")
                (:file "system")))
 
-(asdf:defsystem #:o2/engine/examples
+(asdf:defsystem #:o2/examples
   :description "O2 game engine usage examples."
   :author "Pavel Kulyov <kulyov.pavel@gmail.com>"
   :license "MIT"
-  :depends-on (:o2/engine)
+  :depends-on (:o2)
   :pathname "examples"
   :components ((:file "package")
                (:file "simple")))

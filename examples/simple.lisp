@@ -1,4 +1,4 @@
-(in-package :o2/engine/examples)
+(in-package :o2/examples)
 
 (defun main ()
   ;; You can use default application class without subclassing.

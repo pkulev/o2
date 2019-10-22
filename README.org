@@ -38,8 +38,8 @@
 
 * Running examples
   #+begin_src common-lisp
-    (ql:quickload :o2/engine/examples)
-    (o2/engine/examples::main)
+    (ql:quickload :o2/examples)
+    (o2/examples::main)
   #+end_src
 
 * Licensing
