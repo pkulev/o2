@@ -16,6 +16,8 @@
    :deregister-state
    :set-state
    :get-state
+   :init
+   :deinit
    :start
    :stop
 
