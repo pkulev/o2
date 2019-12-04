@@ -18,22 +18,15 @@
   ())
 
 (defun make-application ()
-  (make-instance 'application))
+  (make-instance 'application :title "Operation 'Operation'"))
 
 (defmethod o2/engine:start ((app application))
 
-  (sdl2-image:init '(:png))
-  (sdl2-ttf:init)
-  (sdl2:with-init (:video)
-    (sdl2:with-window (win :title "o2"
-                           :w 1024
-                           :h 768)
-      (sdl2:with-renderer (ren win :flags '(:accelerated :presentvsync))
-        (let* ((renderer (make-instance 'o2/engine:renderer :renderer ren))
-               current-frame)
-
-          (o2/engine:set-current-renderer renderer)
-          (setf (slot-value app 'o2/engine:renderer) renderer)
+  (o2/engine:init app)
+  (let ((current-frame))
+    (o2/engine:set-current-renderer
+     (make-instance 'o2/engine:renderer
+                    :renderer (o2/engine:renderer app)))
 
           ;; TODO: move to event registration -->
           (log:debug "registering event types...")
@@ -84,7 +77,7 @@
                        #+slynk
                        (livesupport:update-repl-link)
 
-                       (sdl2:render-clear ren)
+                       (sdl2:render-clear (o2/engine:renderer app))
 
                        ;; FIXME: this is only called to make a physic world step in ingame,
                        ;;        do something proper here
@@ -94,7 +87,7 @@
                          (dolist (object objects)
                            (o2/engine:run-systems object)))
 
-                       (sdl2:render-present ren)
+                       (sdl2:render-present (o2/engine:renderer app))
                        (let ((current-speed (- (sdl2:get-ticks)
                                                current-frame)))
                          (when (< current-speed frame-ms)
@@ -123,6 +116,5 @@
 
                        (setf o2/engine:*application* nil)
 
-                       (sdl2-image:quit)
-                       (sdl2-ttf:quit)
-                       t)))))))))
+                       (o2/engine:deinit app)
+                       t))))))
