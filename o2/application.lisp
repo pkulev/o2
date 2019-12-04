@@ -15,7 +15,19 @@ State can be used for level representation for example.
 
 
 (defclass application ()
-  ((frame-ms :initarg :frame-ms
+  ((title :initarg :title
+          :reader title
+          :documentation "Application window title.")
+
+   (width :initarg :width
+          :accessor width
+          :documentation "Window's width.")
+
+   (height :initarg :height
+           :accessor height
+           :documentation "Window's height.")
+
+   (frame-ms :initarg :frame-ms
              :accessor frame-ms
              :documentation "Desired time (ms) we can spend in each frame.")
 
@@ -27,11 +39,16 @@ State can be used for level representation for example.
                   :reader current-state
                   :documentation "Link to current state (object).")
 
-   ;; TODO: renderer must not be set by hand from client code
-   (renderer :initarg :renderer
+   (window :reader window
+           :documentation "Link to window object.")
+
+   (renderer :reader renderer
              :documentation "Link to renderer object."))
 
   (:default-initargs
+   :title "o2 untitled application"
+   :width 1024
+   :height 768
    :frame-ms (/ 1000.0 30.0)
    :states (make-hash-table)
    :current-state nil))
@@ -101,6 +118,40 @@ State will be instantiated and returned as result."
 (defun get-state (app state-name)
   (or (gethash state-name (states app) nil)
       (error "State ~a is not registered." state-name)))
+
+(defgeneric init (application)
+  (:documentation "Initialize all subsystems that are needed for application."))
+
+(defmethod init :before ((app application))
+  (log:info "initializing subsystems"))
+
+(defmethod init ((app application))
+  (sdl2:init :video :timer)
+  (sdl2-image:init '(:png))
+  (sdl2-ttf:init)
+
+  (setf (slot-value app 'window)
+        (sdl2:create-window :title (title app)
+                            :w (width app)
+                            :h (height app)))
+
+  (setf (slot-value app 'renderer)
+        (sdl2:create-renderer (window app) nil '(:accelerated :presentvsync))))
+
+(defgeneric deinit (application)
+  (:documentation "Destruct all used subsystems."))
+
+(defmethod deinit :before ((app application))
+  (log:info "destructing subsystems"))
+
+(defmethod deinit ((app application))
+  (sdl2-image:quit)
+  (sdl2-ttf:quit)
+
+  (sdl2:destroy-renderer (renderer app))
+  (sdl2:destroy-window (window app))
+
+  (sdl2:quit))
 
 (defgeneric start (application)
   (:documentation "Start application."))
