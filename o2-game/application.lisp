@@ -24,10 +24,6 @@
 
   (o2/engine:init app)
   (let ((current-frame))
-    (o2/engine:set-current-renderer
-     (make-instance 'o2/engine:renderer
-                    :renderer (o2/engine:renderer app)))
-
     ;; TODO: move to event registration -->
     (log:debug "registering event types...")
     (o2/engine:register-event-type :restart-current-state)

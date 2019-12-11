@@ -136,7 +136,10 @@ State will be instantiated and returned as result."
                             :h (height app)))
 
   (setf (slot-value app 'renderer)
-        (sdl2:create-renderer (window app) nil '(:accelerated :presentvsync))))
+        (sdl2:create-renderer (window app) nil '(:accelerated :presentvsync)))
+
+  (set-current-renderer (make-instance 'renderer
+                                       :renderer (renderer app))))
 
 (defgeneric deinit (application)
   (:documentation "Destruct all used subsystems."))
